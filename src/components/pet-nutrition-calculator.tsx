@@ -10,12 +10,13 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog } from 'lucide-react';
+import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog, ChevronsRight, Heart } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
 
 const formSchema = z.object({
+    dogName: z.string().min(2, { message: "O nome precisa ter ao menos 2 letras." }).max(50, {message: "O nome é muito longo."}),
     breed: z.string({ required_error: 'Por favor, selecione uma raça.' }).min(1, { message: "Por favor, selecione uma raça." }),
     ageInMonths: z.coerce.number({ invalid_type_error: "Por favor, insira uma idade válida." }).positive({ message: "A idade deve ser um número positivo." }).max(240, { message: "A idade parece muito alta." }),
 });
@@ -80,16 +81,27 @@ const dogBreeds = [
     { value: "cavalierkingcharles", label: "Cavalier King Charles Spaniel" }
 ];
 
+const getLifeStage = (ageInMonths: number) => {
+    if (ageInMonths <= 12) {
+        return { stage: "Filhote", tip: "Fase de crescimento intenso. A nutrição é crucial para o desenvolvimento de ossos e músculos fortes." };
+    } else if (ageInMonths <= 84) { // 7 years
+        return { stage: "Adulto", tip: "Fase de manutenção. A dieta deve equilibrar energia e peso, evitando a obesidade." };
+    } else {
+        return { stage: "Sênior", tip: "Necessidades especiais. A dieta pode precisar de menos calorias e mais fibras, com foco na saúde das articulações." };
+    }
+}
 
 export function PetNutritionCalculator() {
     const [result, setResult] = useState<ResultState>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showFooter, setShowFooter] = useState(false);
+    const [submittedData, setSubmittedData] = useState<FormValues | null>(null);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            dogName: "",
             breed: "",
             ageInMonths: undefined,
         },
@@ -100,6 +112,7 @@ export function PetNutritionCalculator() {
         setShowFooter(true);
         setResult(null);
         setError(null);
+        setSubmittedData(values);
 
         const response = await getFoodAmount({
             breed: values.breed,
@@ -120,6 +133,8 @@ export function PetNutritionCalculator() {
             setShowFooter(false);
         }
     };
+    
+    const lifeStageInfo = submittedData ? getLifeStage(submittedData.ageInMonths) : null;
 
     return (
         <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
@@ -133,6 +148,19 @@ export function PetNutritionCalculator() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <FormField
+                            control={form.control}
+                            name="dogName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Heart className="h-4 w-4" /> Nome do Pet</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="ex: Bob" {...field} className="font-body" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="breed"
@@ -207,20 +235,33 @@ export function PetNutritionCalculator() {
                             </Alert>
                         )}
 
-                        {result && (
+                        {result && submittedData && lifeStageInfo && (
                             <div className="space-y-4">
                                 <div className="w-full text-center p-6 bg-primary/10 rounded-xl border border-primary/20">
-                                    <p className="font-body text-muted-foreground">Ingestão diária recomendada:</p>
+                                    <p className="font-body text-muted-foreground">Porção diária para {submittedData.dogName}:</p>
                                     <p className="font-headline text-6xl font-bold text-primary my-2">
                                         {Math.round(result.foodAmountInGrams)}<span className="text-3xl font-body text-muted-foreground/80">g</span>
                                     </p>
-                                    <p className="font-body text-sm text-muted-foreground">por dia, dividido em 2-3 refeições.</p>
+                                    <p className="font-body text-sm text-muted-foreground">dividido em 2-3 refeições.</p>
                                 </div>
+
+                                <Card className="bg-accent/20 border-accent/30">
+                                     <CardHeader>
+                                        <CardTitle className="font-headline text-lg flex items-center gap-2">
+                                            <ChevronsRight className="h-5 w-5 text-primary"/>
+                                            Fase de Vida: {lifeStageInfo.stage}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-body text-sm text-muted-foreground">{lifeStageInfo.tip}</p>
+                                    </CardContent>
+                                </Card>
+                                
                                 <Alert variant="default" className="bg-green-50 border-green-200">
                                     <Info className="h-4 w-4 text-green-700" />
                                     <AlertTitle className="font-headline text-green-800">Conselho Amigável</AlertTitle>
                                     <AlertDescription className="font-body text-green-700">
-                                        Esta é uma estimativa baseada nas necessidades médias. Por favor, consulte o seu veterinário para confirmar a melhor dieta para o seu animal de estimação.
+                                        Esta é uma estimativa. A necessidade real pode variar com o nível de atividade e metabolismo do seu cão. Consulte sempre um veterinário.
                                     </AlertDescription>
                                 </Alert>
                             </div>
