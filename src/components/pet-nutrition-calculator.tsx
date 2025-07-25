@@ -12,9 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PawPrint, Loader2, Info, Utensils, Bone, Hash } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const formSchema = z.object({
-    breed: z.string().min(2, { message: "Breed must be at least 2 characters." }).max(50, { message: "Breed must be 50 characters or less." }),
+    breed: z.string({ required_error: 'Please select a breed.' }).min(1, { message: "Please select a breed." }),
     ageInMonths: z.coerce.number({ invalid_type_error: "Please enter a valid age." }).positive({ message: "Age must be a positive number." }).max(240, { message: "Age seems too high." }),
 });
 
@@ -23,6 +24,14 @@ type FormValues = z.infer<typeof formSchema>;
 type ResultState = {
     foodAmountInGrams: number;
 } | null;
+
+const dogBreeds = [
+  { value: 'poodle', label: 'Poodle' },
+  { value: 'labrador', label: 'Labrador' },
+  { value: 'shihtzu', label: 'Shih Tzu' },
+  { value: 'golden retriever', label: 'Golden Retriever' },
+  { value: 'pinscher', label: 'Pinscher' },
+];
 
 export function PetNutritionCalculator() {
     const [result, setResult] = useState<ResultState>(null);
@@ -84,9 +93,20 @@ export function PetNutritionCalculator() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-headline text-md flex items-center gap-2"><Bone className="h-4 w-4" /> Dog's Breed</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <Input placeholder="e.g., Golden Retriever" {...field} />
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select a breed" />
+                                      </SelectTrigger>
                                     </FormControl>
+                                    <SelectContent>
+                                      {dogBreeds.map((breed) => (
+                                        <SelectItem key={breed.value} value={breed.value}>
+                                          {breed.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
