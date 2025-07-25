@@ -29,6 +29,7 @@ export async function calculateFoodAmount(input: CalculateFoodAmountInput): Prom
 }
 
 const racas = [
+    { id: "caramelo", nome: "Caramelo (Vira-lata)", porte: "médio", peso_medio_kg: 18, energia: "média", pelagem: "curta" },
     { id: "labrador", nome: "Labrador Retriever", porte: "grande", peso_medio_kg: 30, energia: "alta", pelagem: "curta" },
     { id: "poodle", nome: "Poodle", porte: "médio", peso_medio_kg: 22, energia: "alta", pelagem: "encaracolada" },
     { id: "shihtzu", nome: "Shih Tzu", porte: "pequeno", peso_medio_kg: 6, energia: "baixa", pelagem: "longa" },

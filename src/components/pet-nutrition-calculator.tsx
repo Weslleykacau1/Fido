@@ -27,6 +27,7 @@ type ResultState = {
 } | null;
 
 const dogBreeds = [
+    { value: "caramelo", label: "Caramelo (Vira-lata)" },
     { value: "labrador", label: "Labrador Retriever" },
     { value: "poodle", label: "Poodle" },
     { value: "shihtzu", label: "Shih Tzu" },
