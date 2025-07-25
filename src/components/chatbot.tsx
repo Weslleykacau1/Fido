@@ -31,7 +31,7 @@ const faqData = [
   },
   {
     pergunta: "Posso dar ossos para meu cachorro?",
-    resposta: "Nunca dê ossos cozidos. Ossos crus de açougue, sob orientação, podem ser seguros para mastigação supervisionada."
+    resposta: "É um tema delicado. Ossos cozidos NUNCA devem ser dados, pois podem se quebrar em pedaços pontiagudos e causar perfurações. Ossos crus recreativos, como os de joelho de boi, podem ser uma opção para cães de mordida forte, mas sempre sob supervisão rigorosa. Existem riscos de fraturas dentárias e contaminação. A opção mais segura são os ossos de nylon ou brinquedos resistentes. Consulte seu veterinário."
   },
   {
     pergunta: "O que fazer se meu cachorro estiver com diarreia?",
