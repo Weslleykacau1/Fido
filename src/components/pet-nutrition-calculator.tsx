@@ -26,11 +26,16 @@ type ResultState = {
 } | null;
 
 const dogBreeds = [
-  { value: 'poodle', label: 'Poodle' },
-  { value: 'labrador', label: 'Labrador' },
-  { value: 'shihtzu', label: 'Shih Tzu' },
-  { value: 'golden retriever', label: 'Golden Retriever' },
-  { value: 'pinscher', label: 'Pinscher' },
+    { value: 'labrador', label: 'Labrador Retriever' },
+    { value: 'poodle', label: 'Poodle' },
+    { value: 'shihtzu', label: 'Shih Tzu' },
+    { value: 'pinscher', label: 'Pinscher' },
+    { value: 'golden', label: 'Golden Retriever' },
+    { value: 'bulldog', label: 'Bulldog Inglês' },
+    { value: 'beagle', label: 'Beagle' },
+    { value: 'yorkshire', label: 'Yorkshire Terrier' },
+    { value: 'pastoralemao', label: 'Pastor Alemão' },
+    { value: 'rottweiler', label: 'Rottweiler' },
 ];
 
 export function PetNutritionCalculator() {
@@ -67,8 +72,6 @@ export function PetNutritionCalculator() {
         setIsLoading(false);
     }
     
-    // This is a workaround for Framer Motion's AnimatePresence exit animation
-    // We delay hiding the footer to allow the animation to complete
     const handleAnimationComplete = () => {
         if (!isLoading && !result && !error) {
             setShowFooter(false);
@@ -118,7 +121,7 @@ export function PetNutritionCalculator() {
                                 <FormItem>
                                     <FormLabel className="font-headline text-md flex items-center gap-2"><Hash className="h-4 w-4" /> Idade em meses</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder="ex: 5" {...field} />
+                                        <Input type="number" placeholder="ex: 5" {...field} value={field.value ?? ''} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
