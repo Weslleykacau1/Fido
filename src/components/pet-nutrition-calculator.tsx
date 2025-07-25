@@ -10,7 +10,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Utensils, Bone, Hash } from 'lucide-react';
+import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
@@ -121,13 +121,13 @@ export function PetNutritionCalculator() {
     };
 
     return (
-        <Card className="w-full max-w-md bg-card/60 backdrop-blur-sm shadow-2xl shadow-primary/10 rounded-2xl">
+        <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
             <CardHeader className="text-center">
-                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 border border-primary/20">
-                    <Utensils className="h-8 w-8 text-primary" />
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
+                    <Dog className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-4xl">FidoFeed.ai</CardTitle>
-                <CardDescription className="font-body text-lg pt-1">O nutricionista pessoal do seu cão</CardDescription>
+                <CardTitle className="font-headline text-4xl font-bold tracking-tight text-foreground">FidoFeed.ai</CardTitle>
+                <CardDescription className="font-body text-lg pt-1 text-muted-foreground">O nutricionista pessoal do seu cão</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -137,15 +137,15 @@ export function PetNutritionCalculator() {
                             name="breed"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="font-headline text-md flex items-center gap-2"><Bone className="h-4 w-4" /> Raça do Cão</FormLabel>
+                                    <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Bone className="h-4 w-4" /> Raça do Cão</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                      <SelectTrigger>
+                                      <SelectTrigger className="font-body">
                                         <SelectValue placeholder="Selecione uma raça" />
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      <ScrollArea className="h-72">
+                                      <ScrollArea className="h-72 font-body">
                                         {dogBreeds.map((breed) => (
                                           <SelectItem key={breed.value} value={breed.value}>
                                             {breed.label}
@@ -163,15 +163,15 @@ export function PetNutritionCalculator() {
                             name="ageInMonths"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="font-headline text-md flex items-center gap-2"><Hash className="h-4 w-4" /> Idade em meses</FormLabel>
+                                    <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Hash className="h-4 w-4" /> Idade em meses</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder="ex: 5" {...field} value={field.value ?? ''} />
+                                        <Input type="number" placeholder="ex: 5" {...field} value={field.value ?? ''} className="font-body" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" disabled={isLoading} className="w-full font-headline text-lg py-6 rounded-xl">
+                        <Button type="submit" disabled={isLoading} className="w-full font-headline font-bold text-lg py-6 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 transition-shadow duration-300">
                             {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PawPrint className="mr-2 h-5 w-5" />}
                             Calcular
                         </Button>
@@ -208,17 +208,17 @@ export function PetNutritionCalculator() {
 
                         {result && (
                             <div className="space-y-4">
-                                <div className="w-full text-center p-6 bg-primary/5 rounded-xl border border-primary/20">
+                                <div className="w-full text-center p-6 bg-primary/10 rounded-xl border border-primary/20">
                                     <p className="font-body text-muted-foreground">Ingestão diária recomendada:</p>
                                     <p className="font-headline text-6xl font-bold text-primary my-2">
                                         {Math.round(result.foodAmountInGrams)}<span className="text-3xl font-body text-muted-foreground/80">g</span>
                                     </p>
                                     <p className="font-body text-sm text-muted-foreground">por dia, dividido em 2-3 refeições.</p>
                                 </div>
-                                <Alert>
-                                    <Info className="h-4 w-4" />
-                                    <AlertTitle className="font-headline">Conselho Amigável</AlertTitle>
-                                    <AlertDescription className="font-body">
+                                <Alert variant="default" className="bg-green-50 border-green-200">
+                                    <Info className="h-4 w-4 text-green-700" />
+                                    <AlertTitle className="font-headline text-green-800">Conselho Amigável</AlertTitle>
+                                    <AlertDescription className="font-body text-green-700">
                                         Esta é uma estimativa baseada nas necessidades médias. Por favor, consulte o seu veterinário para confirmar a melhor dieta para o seu animal de estimação.
                                     </AlertDescription>
                                 </Alert>
