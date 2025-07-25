@@ -7,9 +7,9 @@ export async function getFoodAmount(input: CalculateFoodAmountInput): Promise<{ 
         const result = await calculateFoodAmount(input);
         return { success: true, data: result };
     } catch (error) {
-        let errorMessage = 'An unexpected error occurred. Please try again.';
+        let errorMessage = 'Ocorreu um erro inesperado. Por favor, tente novamente.';
         if (error instanceof Error && error.message.includes('not found in database')) {
-            errorMessage = `We couldn't find the breed "${input.breed}". Please check the spelling or try a similar breed.`;
+            errorMessage = `Não encontramos a raça "${input.breed}". Por favor, verifique a ortografia ou tente uma raça semelhante.`;
         }
         console.error(error);
         return { success: false, error: errorMessage };

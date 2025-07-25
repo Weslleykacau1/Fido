@@ -12,15 +12,15 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const CalculateFoodAmountInputSchema = z.object({
-  breed: z.string().describe('The breed of the dog (e.g., Golden Retriever).'),
-  ageInMonths: z.number().describe('The age of the dog in months.'),
+  breed: z.string().describe('A raça do cachorro (e.g., Golden Retriever).'),
+  ageInMonths: z.number().describe('A idade do cachorro em meses.'),
 });
 export type CalculateFoodAmountInput = z.infer<typeof CalculateFoodAmountInputSchema>;
 
 const CalculateFoodAmountOutputSchema = z.object({
   foodAmountInGrams: z
     .number()
-    .describe('The calculated daily food amount for the dog, in grams.'),
+    .describe('A quantidade diária de ração calculada para o cachorro, em gramas.'),
 });
 export type CalculateFoodAmountOutput = z.infer<typeof CalculateFoodAmountOutputSchema>;
 

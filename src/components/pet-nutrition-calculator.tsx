@@ -15,8 +15,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 const formSchema = z.object({
-    breed: z.string({ required_error: 'Please select a breed.' }).min(1, { message: "Please select a breed." }),
-    ageInMonths: z.coerce.number({ invalid_type_error: "Please enter a valid age." }).positive({ message: "Age must be a positive number." }).max(240, { message: "Age seems too high." }),
+    breed: z.string({ required_error: 'Por favor, selecione uma raça.' }).min(1, { message: "Por favor, selecione uma raça." }),
+    ageInMonths: z.coerce.number({ invalid_type_error: "Por favor, insira uma idade válida." }).positive({ message: "A idade deve ser um número positivo." }).max(240, { message: "A idade parece muito alta." }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -82,7 +82,7 @@ export function PetNutritionCalculator() {
                     <Utensils className="h-8 w-8 text-primary" />
                 </div>
                 <CardTitle className="font-headline text-4xl">FidoFeed.ai</CardTitle>
-                <CardDescription className="font-body text-lg pt-1">Your dog's personal nutritionist</CardDescription>
+                <CardDescription className="font-body text-lg pt-1">O nutricionista pessoal do seu cão</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -92,11 +92,11 @@ export function PetNutritionCalculator() {
                             name="breed"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="font-headline text-md flex items-center gap-2"><Bone className="h-4 w-4" /> Dog's Breed</FormLabel>
+                                    <FormLabel className="font-headline text-md flex items-center gap-2"><Bone className="h-4 w-4" /> Raça do Cão</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger>
-                                        <SelectValue placeholder="Select a breed" />
+                                        <SelectValue placeholder="Selecione uma raça" />
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
@@ -116,9 +116,9 @@ export function PetNutritionCalculator() {
                             name="ageInMonths"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="font-headline text-md flex items-center gap-2"><Hash className="h-4 w-4" /> Age in months</FormLabel>
+                                    <FormLabel className="font-headline text-md flex items-center gap-2"><Hash className="h-4 w-4" /> Idade em meses</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder="e.g., 5" {...field} />
+                                        <Input type="number" placeholder="ex: 5" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -126,7 +126,7 @@ export function PetNutritionCalculator() {
                         />
                         <Button type="submit" disabled={isLoading} className="w-full font-headline text-lg py-6 rounded-xl">
                             {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PawPrint className="mr-2 h-5 w-5" />}
-                            Calculate
+                            Calcular
                         </Button>
                     </form>
                 </Form>
@@ -145,7 +145,7 @@ export function PetNutritionCalculator() {
                         {isLoading && (
                             <div className="flex items-center justify-center p-8 text-muted-foreground font-body">
                                 <Loader2 className="mr-3 h-6 w-6 animate-spin" />
-                                Calculating the perfect portion...
+                                Calculando a porção perfeita...
                             </div>
                         )}
 
@@ -162,17 +162,17 @@ export function PetNutritionCalculator() {
                         {result && (
                             <div className="space-y-4">
                                 <div className="w-full text-center p-6 bg-primary/5 rounded-xl border border-primary/20">
-                                    <p className="font-body text-muted-foreground">Recommended daily intake:</p>
+                                    <p className="font-body text-muted-foreground">Ingestão diária recomendada:</p>
                                     <p className="font-headline text-6xl font-bold text-primary my-2">
                                         {Math.round(result.foodAmountInGrams)}<span className="text-3xl font-body text-muted-foreground/80">g</span>
                                     </p>
-                                    <p className="font-body text-sm text-muted-foreground">per day, split into 2-3 meals.</p>
+                                    <p className="font-body text-sm text-muted-foreground">por dia, dividido em 2-3 refeições.</p>
                                 </div>
                                 <Alert>
                                     <Info className="h-4 w-4" />
-                                    <AlertTitle className="font-headline">Friendly Advice</AlertTitle>
+                                    <AlertTitle className="font-headline">Conselho Amigável</AlertTitle>
                                     <AlertDescription className="font-body">
-                                        This is an estimate based on average needs. Please consult your veterinarian to confirm the best diet for your pet.
+                                        Esta é uma estimativa baseada nas necessidades médias. Por favor, consulte o seu veterinário para confirmar a melhor dieta para o seu animal de estimação.
                                     </AlertDescription>
                                 </Alert>
                             </div>
