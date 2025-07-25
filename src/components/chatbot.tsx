@@ -8,57 +8,139 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageSquare, Send, Bot, User } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const faqData = [
-  {
-    pergunta: "Quantas vezes por dia devo alimentar meu cachorro?",
-    resposta: "Cães adultos geralmente comem 2 vezes ao dia. Filhotes podem precisar de 3 a 4 refeições."
+const dogBreeds = {
+  "Labrador Retriever": {
+    group: "Sporting",
+    size: "large",
+    diet: "Ração de alta qualidade com 25-30% de proteína e 12-15% de gordura. 800-1200g/dia, dependendo do peso e atividade.",
+    tips: "Controle a quantidade para evitar obesidade. Ômega-3 ajuda na pelagem."
   },
-  {
-    pergunta: "Como saber a quantidade de ração ideal para meu cachorro?",
-    resposta: "A quantidade depende da raça, idade, peso e nível de atividade. Use uma calculadora como a FidoFeed.ai para estimar corretamente."
+  "Pastor Alemão": {
+    group: "Herding",
+    size: "large",
+    diet: "Ração premium com 22-28% de proteína e fibras para digestão. 600-1000g/dia para adultos ativos.",
+    tips: "Cuidado com problemas articulares; glucosamina pode ser benéfica."
   },
-  {
-    pergunta: "Posso dar comida caseira para meu cachorro?",
-    resposta: "Sim, desde que balanceada com orientação de um veterinário ou nutricionista canino. Evite temperos, sal e cebola."
+  "Bulldog": {
+    group: "Non-Sporting",
+    size: "medium",
+    diet: "Ração com baixo teor de gordura (10-12%) e alta digestibilidade. 400-600g/dia, ajustado ao peso.",
+    tips: "Evite alimentos que causem alergias, como trigo ou soja."
   },
-  {
-    pergunta: "Filhotes podem comer ração de adulto?",
-    resposta: "Não. Filhotes devem comer ração específica para filhotes até completarem cerca de 12 meses (dependendo da raça)."
+  "Poodle": {
+    group: "Non-Sporting",
+    size: "variable",
+    diet: "Ração com 25% de proteína e 15% de gordura. 200-500g/dia, dependendo do tamanho (toy, miniatura, padrão).",
+    tips: "Suplementos para pele e pelagem são recomendados."
   },
-  {
-    pergunta: "Quais alimentos são proibidos para cães?",
-    resposta: "Evite chocolate, uvas, cebola, alho, abacate, café e ossos cozidos. São tóxicos para cães."
+  "Golden Retriever": {
+    group: "Sporting",
+    size: "large",
+    diet: "Ração balanceada com 20-25% de proteína e 12-15% de gordura. 700-1100g/dia para adultos.",
+    tips: "Ideal para atividades como natação; evite superalimentação."
   },
-  {
-    pergunta: "Posso dar ossos para meu cachorro?",
-    resposta: "É um tema delicado. Ossos cozidos NUNCA devem ser dados, pois podem se quebrar em pedaços pontiagudos e causar perfurações. Ossos crus recreativos, como os de joelho de boi, podem ser uma opção para cães de mordida forte, mas sempre sob supervisão rigorosa. Existem riscos de fraturas dentárias e contaminação. A opção mais segura são os ossos de nylon ou brinquedos resistentes. Consulte seu veterinário."
+  "Beagle": {
+    group: "Hound",
+    size: "small",
+    diet: "Ração com 20-25% de proteína e calorias moderadas. 300-500g/dia, ajustado ao peso.",
+    tips: "Propenso a obesidade; controle porções e ofereça exercícios."
   },
-  {
-    pergunta: "O que fazer se meu cachorro estiver com diarreia?",
-    resposta: "Suspenda a alimentação por 12 horas, ofereça água. Se persistir, procure o veterinário imediatamente."
-  }
-];
+  "Chihuahua": {
+    group: "Toy",
+    size: "small",
+    diet: "Ração para raças pequenas com 25-30% de proteína. 100-200g/dia, dependendo do peso.",
+    tips: "Evite alimentos gordurosos devido ao metabolismo rápido."
+  },
+  "Rottweiler": {
+    group: "Working",
+    size: "large",
+    diet: "Ração com 24-28% de proteína e suporte articular. 800-1200g/dia para adultos ativos.",
+    tips: "Treinamento e socialização são cruciais; evite obesidade."
+  },
+  "Border Collie": {
+    group: "Herding",
+    size: "medium",
+    diet: "Ração com 25-30% de proteína para alta energia. 500-800g/dia, dependendo da atividade.",
+    tips: "Necessita de estímulo mental e físico; dieta energética."
+  },
+  "Caramelo": {
+    group: "Non-Sporting",
+    size: "medium",
+    diet: "Ração balanceada com 20-25% de proteína. 400-700g/dia, ajustado ao peso.",
+    tips: "Resiliente, mas monitore a digestão com mudanças na dieta."
+  },
+};
 
+const sizeCategories = {
+  "small": {
+    diet: "Ração para raças pequenas com 25-30% de proteína e calorias moderadas. 100-400g/dia, dependendo do peso.",
+    tips: "Evite superalimentação; raças pequenas têm metabolismo rápido."
+  },
+  "medium": {
+    diet: "Ração balanceada com 20-25% de proteína e 10-15% de gordura. 400-800g/dia, dependendo do peso e atividade.",
+    tips: "Monitore o peso para evitar obesidade; exercícios moderados são ideais."
+  },
+  "large": {
+    diet: "Ração com 22-28% de proteína e suporte articular. 600-1200g/dia, dependendo do peso e atividade.",
+    tips: "Suplementos como glucosamina ajudam em raças grandes."
+  }
+};
+
+const faqs = {
+  "melhor_racao": {
+    keywords: ["melhor ração", "qual ração", "ração ideal"],
+    answer: "A melhor ração depende da raça, idade, peso e nível de atividade do seu cão. Raças grandes como Labrador precisam de rações com mais proteína (25-30%), enquanto raças pequenas como Chihuahua se beneficiam de rações com menos calorias. Sempre escolha rações premium e consulte um veterinário."
+  },
+  "frequencia_alimentacao": {
+    keywords: ["quantas vezes", "vezes por dia", "alimentar meu cão"],
+    answer: "Filhotes (até 6 meses) comem 3-4 vezes ao dia. Cães adultos comem 1-2 vezes ao dia, dependendo da raça e rotina. Divida a quantidade diária recomendada para evitar problemas digestivos."
+  },
+  "comida_caseira": {
+    keywords: ["comida caseira", "pode comer comida", "alimento caseiro"],
+    answer: "Comida caseira pode ser uma opção, mas deve ser balanceada com proteínas, carboidratos e vegetais, evitando temperos, sal e alimentos tóxicos (como cebola, alho, chocolate). Consulte um veterinário para montar uma dieta adequada."
+  },
+  "alimentos_toxicos": {
+    keywords: ["tóxicos", "alimentos perigosos", "não pode comer"],
+    answer: "Alimentos tóxicos incluem chocolate, uvas, passas, cebola, alho, abacate, nozes de macadâmia e xilitol (adoçante). Evite ossos cozidos, que podem lascar e causar obstruções."
+  },
+  "sobrepeso": {
+    keywords: ["sobrepeso", "cão gordo", "peso do cão"],
+    answer: "Verifique se consegue sentir as costelas do cão com leve pressão. Se ele tem cintura pouco definida ou barriga proeminente, pode estar com sobrepeso. Consulte um veterinário para ajustar a dieta."
+  },
+    "ossos": {
+        keywords: ["osso", "ossos"],
+        answer: "É um tema delicado. Ossos cozidos NUNCA devem ser dados, pois podem se quebrar em pedaços pontiagudos e causar perfurações. Ossos crus recreativos, como os de joelho de boi, podem ser uma opção para cães de mordida forte, mas sempre sob supervisão rigorosa. Existem riscos de fraturas dentárias e contaminação. A opção mais segura são os ossos de nylon ou brinquedos resistentes. Consulte seu veterinário."
+    }
+};
 
 function responderChatbot(perguntaUsuario: string): string {
-    const pergunta = perguntaUsuario.toLowerCase();
+  const input = perguntaUsuario.toLowerCase();
 
-    // Tenta encontrar uma correspondência mais exata primeiro
-    for (const item of faqData) {
-        if (item.pergunta.toLowerCase() === pergunta) {
-            return item.resposta;
-        }
+  // 1. Verificar por raças específicas
+  for (const breedName in dogBreeds) {
+    if (input.includes(breedName.toLowerCase())) {
+      const breedData = dogBreeds[breedName as keyof typeof dogBreeds];
+      return `Sobre ${breedName}: ${breedData.diet} Dica: ${breedData.tips}`;
     }
+  }
 
-    // Lógica de busca por palavras-chave
-    const encontrada = faqData.find(item => {
-        const palavrasPergunta = item.pergunta.toLowerCase().split(" ").slice(0, 3); // Usa as primeiras 3 palavras
-        return palavrasPergunta.some(palavra => pergunta.includes(palavra));
-    });
+  // 2. Verificar por perguntas frequentes (FAQs)
+  for (const faqKey in faqs) {
+    const faq = faqs[faqKey as keyof typeof faqs];
+    if (faq.keywords.some(keyword => input.includes(keyword))) {
+      return faq.answer;
+    }
+  }
+  
+  // 3. Verificar por porte (size)
+  for (const sizeName in sizeCategories) {
+      if (input.includes(sizeName)) {
+          const sizeData = sizeCategories[sizeName as keyof typeof sizeCategories];
+          return `Para cães de porte ${sizeName}: ${sizeData.diet} Dica: ${sizeData.tips}`;
+      }
+  }
 
-    return encontrada
-        ? encontrada.resposta
-        : "Desculpe, não sei responder isso ainda. Tente reformular ou fale com um veterinário.";
+  return "Desculpe, não sei responder isso ainda. Tente reformular ou fale com um veterinário.";
 }
 
 type Message = {
@@ -67,9 +149,9 @@ type Message = {
 }
 
 const suggestedQuestions = [
-    "Quantas vezes alimentar o cão?",
+    "Qual a dieta do Labrador?",
     "Quais alimentos são proibidos?",
-    "Posso dar ossos?",
+    "Quantas vezes devo alimentar meu cão?",
 ];
 
 export function Chatbot() {
