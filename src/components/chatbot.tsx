@@ -107,10 +107,10 @@ const faqs = {
     keywords: ["sobrepeso", "cão gordo", "peso do cão"],
     answer: "Verifique se consegue sentir as costelas do cão com leve pressão. Se ele tem cintura pouco definida ou barriga proeminente, pode estar com sobrepeso. Consulte um veterinário para ajustar a dieta."
   },
-    "ossos": {
-        keywords: ["osso", "ossos"],
-        answer: "É um tema delicado. Ossos cozidos NUNCA devem ser dados, pois podem se quebrar em pedaços pontiagudos e causar perfurações. Ossos crus recreativos, como os de joelho de boi, podem ser uma opção para cães de mordida forte, mas sempre sob supervisão rigorosa. Existem riscos de fraturas dentárias e contaminação. A opção mais segura são os ossos de nylon ou brinquedos resistentes. Consulte seu veterinário."
-    }
+  "ossos": {
+    keywords: ["osso", "ossos"],
+    answer: "Não é recomendado dar ossos para cachorros, especialmente ossos cozidos ou pequenos como os de frango, pois podem lascar e causar perfurações no trato digestivo, além de risco de engasgo. Ossos naturais crus, embora possam ser roídos com moderação, também apresentam riscos de contaminação bacteriana e quebra de dentes.\n\n**Riscos:**\n- **Lesões graves:** Perfurações no esôfago, estômago ou intestino.\n- **Engasgos:** Risco de asfixia, especialmente com ossos pequenos.\n- **Problemas dentários:** Fraturas nos dentes.\n- **Contaminação:** Ossos crus podem ter bactérias como Salmonella.\n\n**Alternativas Seguras:**\n- Ossos de nylon ou brinquedos específicos para roer, sempre sob supervisão.\n\n**Importante:** Consulte sempre um veterinário antes de oferecer qualquer tipo de osso. Se seu cão ingerir um e apresentar sintomas (vômito, diarreia), procure um veterinário imediatamente."
+  }
 };
 
 function responderChatbot(perguntaUsuario: string): string {
@@ -150,7 +150,7 @@ type Message = {
 
 const suggestedQuestions = [
     "Qual a dieta do Labrador?",
-    "Quais alimentos são proibidos?",
+    "Posso dar ossos?",
     "Quantas vezes devo alimentar meu cão?",
 ];
 
@@ -218,7 +218,7 @@ export function Chatbot() {
                                 >
                                     {msg.sender === 'bot' && <Bot className="h-6 w-6 text-primary flex-shrink-0" />}
                                     <div className={`rounded-lg px-4 py-2 max-w-xs ${msg.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                                        <p className="text-sm font-body">{msg.text}</p>
+                                        <p className="text-sm font-body whitespace-pre-wrap">{msg.text}</p>
                                     </div>
                                     {msg.sender === 'user' && <User className="h-6 w-6 text-muted-foreground flex-shrink-0" />}
                                 </motion.div>
