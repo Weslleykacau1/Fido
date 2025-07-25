@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PawPrint, Loader2, Info, Utensils, Bone, Hash } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { ScrollArea } from './ui/scroll-area';
 
 const formSchema = z.object({
     breed: z.string({ required_error: 'Por favor, selecione uma raça.' }).min(1, { message: "Por favor, selecione uma raça." }),
@@ -26,17 +27,58 @@ type ResultState = {
 } | null;
 
 const dogBreeds = [
-    { value: 'labrador', label: 'Labrador Retriever' },
-    { value: 'poodle', label: 'Poodle' },
-    { value: 'shihtzu', label: 'Shih Tzu' },
-    { value: 'pinscher', label: 'Pinscher' },
-    { value: 'golden', label: 'Golden Retriever' },
-    { value: 'bulldog', label: 'Bulldog Inglês' },
-    { value: 'beagle', label: 'Beagle' },
-    { value: 'yorkshire', label: 'Yorkshire Terrier' },
-    { value: 'pastoralemao', label: 'Pastor Alemão' },
-    { value: 'rottweiler', label: 'Rottweiler' },
+    { value: "labrador", label: "Labrador Retriever" },
+    { value: "poodle", label: "Poodle" },
+    { value: "shihtzu", label: "Shih Tzu" },
+    { value: "pinscher", label: "Pinscher" },
+    { value: "golden", label: "Golden Retriever" },
+    { value: "bulldog", label: "Bulldog Inglês" },
+    { value: "beagle", label: "Beagle" },
+    { value: "yorkshire", label: "Yorkshire Terrier" },
+    { value: "pastoralemao", label: "Pastor Alemão" },
+    { value: "rottweiler", label: "Rottweiler" },
+    { value: "boxer", label: "Boxer" },
+    { value: "dachshund", label: "Dachshund" },
+    { value: "siberianhusky", label: "Husky Siberiano" },
+    { value: "doberman", label: "Doberman" },
+    { value: "australianshepherd", label: "Pastor Australiano" },
+    { value: "schnauzer", label: "Schnauzer" },
+    { value: "chihuahua", label: "Chihuahua" },
+    { value: "pug", label: "Pug" },
+    { value: "pomeranian", label: "Spitz Alemão (Pomerânia)" },
+    { value: "bordercollie", label: "Border Collie" },
+    { value: "maltese", label: "Maltês" },
+    { value: "cockerspaniel", label: "Cocker Spaniel" },
+    { value: "frenchbulldog", label: "Buldogue Francês" },
+    { value: "greatdane", label: "Dogue Alemão" },
+    { value: "bernese", label: "Boiadeiro Bernês" },
+    { value: "akita", label: "Akita" },
+    { value: "bichonfrise", label: "Bichon Frisé" },
+    { value: "weimaraner", label: "Weimaraner" },
+    { value: "dalmatian", label: "Dálmata" },
+    { value: "bassetthound", label: "Basset Hound" },
+    { value: "shibainu", label: "Shiba Inu" },
+    { value: "stbernard", label: "São Bernardo" },
+    { value: "vizsla", label: "Vizsla" },
+    { value: "rhodesianridgeback", label: "Rhodesian Ridgeback" },
+    { value: "canecorso", label: "Cane Corso" },
+    { value: "bullterrier", label: "Bull Terrier" },
+    { value: "staffordshirebullterrier", label: "Staffordshire Bull Terrier" },
+    { value: "newfoundland", label: "Terra Nova" },
+    { value: "englishsetter", label: "Setter Inglês" },
+    { value: "irishwolfhound", label: "Lébrel Irlandês" },
+    { value: "papillon", label: "Papillon" },
+    { value: "samoyed", label: "Samoieda" },
+    { value: "whippet", label: "Whippet" },
+    { value: "pekingese", label: "Pequinês" },
+    { value: "bloodhound", label: "Bloodhound" },
+    { value: "chowchow", label: "Chow Chow" },
+    { value: "jackrussell", label: "Jack Russell Terrier" },
+    { value: "sharpei", label: "Shar Pei" },
+    { value: "westie", label: "West Highland White Terrier" },
+    { value: "cavalierkingcharles", label: "Cavalier King Charles Spaniel" }
 ];
+
 
 export function PetNutritionCalculator() {
     const [result, setResult] = useState<ResultState>(null);
@@ -103,11 +145,13 @@ export function PetNutritionCalculator() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {dogBreeds.map((breed) => (
-                                        <SelectItem key={breed.value} value={breed.value}>
-                                          {breed.label}
-                                        </SelectItem>
-                                      ))}
+                                      <ScrollArea className="h-72">
+                                        {dogBreeds.map((breed) => (
+                                          <SelectItem key={breed.value} value={breed.value}>
+                                            {breed.label}
+                                          </SelectItem>
+                                        ))}
+                                      </ScrollArea>
                                     </SelectContent>
                                   </Select>
                                     <FormMessage />
