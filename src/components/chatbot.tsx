@@ -66,35 +66,52 @@ type Message = {
     sender: 'user' | 'bot';
 }
 
+const suggestedQuestions = [
+    "Quantas vezes alimentar o cão?",
+    "Quais alimentos são proibidos?",
+    "Posso dar ossos?",
+];
+
 export function Chatbot() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-    const handleSend = () => {
-        if (input.trim() === '') return;
+    const handleSend = (question?: string) => {
+        const textToSend = question || input;
+        if (textToSend.trim() === '') return;
 
-        const userMessage: Message = { text: input, sender: 'user' };
+        const userMessage: Message = { text: textToSend, sender: 'user' };
         setMessages(prev => [...prev, userMessage]);
 
-        const botResponse = responderChatbot(input);
+        const botResponse = responderChatbot(textToSend);
         const botMessage: Message = { text: botResponse, sender: 'bot' };
 
         setTimeout(() => {
             setMessages(prev => [...prev, botMessage]);
         }, 500);
 
-        setInput('');
+        if(!question) {
+            setInput('');
+        }
     };
     
     useEffect(() => {
         if (scrollAreaRef.current) {
-            scrollAreaRef.current.scrollTo({
-                top: scrollAreaRef.current.scrollHeight,
-                behavior: 'smooth'
-            });
+            const viewport = scrollAreaRef.current.querySelector('div');
+            if(viewport){
+                viewport.scrollTo({
+                    top: viewport.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
         }
     }, [messages]);
+
+    const handleSuggestionClick = (question: string) => {
+        setInput(question);
+        handleSend(question);
+    };
 
     return (
         <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
@@ -105,7 +122,7 @@ export function Chatbot() {
                 <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Dúvidas Frequentes</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="flex flex-col h-80">
+                <div className="flex flex-col h-96">
                     <ScrollArea className="flex-grow p-4 border rounded-lg bg-background/50" ref={scrollAreaRef}>
                         <AnimatePresence>
                             {messages.map((msg, index) => (
@@ -128,8 +145,21 @@ export function Chatbot() {
                          {messages.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground font-body">
                                 <MessageSquare className="h-12 w-12 mb-4" />
-                                <p>Tire suas dúvidas sobre alimentação canina.</p>
-                                <p className="text-xs mt-1">Ex: "Quantas vezes devo alimentar meu cão?"</p>
+                                <p className="font-semibold">Tire suas dúvidas sobre alimentação canina.</p>
+                                <p className="text-sm mt-2 mb-4">Ou tente uma das sugestões abaixo:</p>
+                                <div className="flex flex-wrap justify-center gap-2">
+                                    {suggestedQuestions.map((q) => (
+                                        <Button
+                                            key={q}
+                                            variant="outline"
+                                            size="sm"
+                                            className="font-body"
+                                            onClick={() => handleSuggestionClick(q)}
+                                        >
+                                            {q}
+                                        </Button>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </ScrollArea>
@@ -142,7 +172,7 @@ export function Chatbot() {
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                             className="flex-grow font-body"
                         />
-                        <Button onClick={handleSend} className="ml-2">
+                        <Button onClick={() => handleSend()} className="ml-2">
                             <Send className="h-4 w-4" />
                         </Button>
                     </div>
