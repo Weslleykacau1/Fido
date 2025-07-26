@@ -16,6 +16,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 const petSchema = z.object({
   id: z.string(),
   name: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
+  breed: z.string().optional(),
+  ageInMonths: z.number().optional(),
   ownerName: z.string().optional(),
   ownerEmail: z.string().email("Por favor, insira um e-mail válido.").optional().or(z.literal('')),
   weightHistory: z.array(z.object({
@@ -23,7 +25,14 @@ const petSchema = z.object({
     date: z.string(),
   })).optional(),
 });
-type Pet = z.infer<typeof petSchema>;
+export type Pet = z.infer<typeof petSchema>;
+
+interface PetProfileProps {
+    pets: Pet[];
+    setPets: React.Dispatch<React.SetStateAction<Pet[]>>;
+    selectedPetId: string | null;
+    setSelectedPetId: React.Dispatch<React.SetStateAction<string | null>>;
+}
 
 const addPetFormSchema = z.object({
     petName: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
@@ -41,35 +50,7 @@ const ownerFormSchema = z.object({
 });
 type OwnerFormValues = z.infer<typeof ownerFormSchema>;
 
-const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
-    if (!jsonString) return defaultValue;
-    try {
-        return JSON.parse(jsonString) ?? defaultValue;
-    } catch (error) {
-        console.error("Failed to parse JSON:", error);
-        return defaultValue;
-    }
-};
-
-export function PetProfile() {
-  const [pets, setPets] = useState<Pet[]>([]);
-  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
-    if (savedPets.length > 0) {
-      setPets(savedPets);
-      setSelectedPetId(savedPets[0].id);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (pets.length > 0) {
-      localStorage.setItem('pets', JSON.stringify(pets));
-    } else {
-      localStorage.removeItem('pets');
-    }
-  }, [pets]);
+export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: PetProfileProps) {
 
   const addPetForm = useForm<AddPetFormValues>({
     resolver: zodResolver(addPetFormSchema),

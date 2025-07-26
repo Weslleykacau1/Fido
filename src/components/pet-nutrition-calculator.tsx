@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,6 +14,7 @@ import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog, ChevronsRight, Hear
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
+import { Pet } from './pet-profile';
 
 const formSchema = z.object({
     dogName: z.string().min(2, { message: "O nome precisa ter ao menos 2 letras." }).max(50, {message: "O nome é muito longo."}),
@@ -91,7 +92,7 @@ const getLifeStage = (ageInMonths: number) => {
     }
 }
 
-export function PetNutritionCalculator() {
+export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | null }) {
     const [result, setResult] = useState<ResultState>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -106,6 +107,22 @@ export function PetNutritionCalculator() {
             ageInMonths: undefined,
         },
     });
+
+    useEffect(() => {
+        if (selectedPet) {
+            form.reset({
+                dogName: selectedPet.name,
+                breed: selectedPet.breed || "",
+                ageInMonths: selectedPet.ageInMonths || undefined,
+            });
+        } else {
+            form.reset({
+                dogName: "",
+                breed: "",
+                ageInMonths: undefined,
+            })
+        }
+    }, [selectedPet, form]);
 
     async function onSubmit(values: FormValues) {
         setIsLoading(true);
@@ -167,7 +184,7 @@ export function PetNutritionCalculator() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Bone className="h-4 w-4" /> Raça do Cão</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                                     <FormControl>
                                       <SelectTrigger className="font-body">
                                         <SelectValue placeholder="Selecione uma raça" />

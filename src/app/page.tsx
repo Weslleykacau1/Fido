@@ -1,10 +1,44 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import { PetNutritionCalculator } from '@/components/pet-nutrition-calculator';
 import { Chatbot } from '@/components/chatbot';
-import { PetProfile } from '@/components/pet-profile';
+import { PetProfile, Pet } from '@/components/pet-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dog, MessageSquare, User } from 'lucide-react';
 
+const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
+    if (!jsonString) return defaultValue;
+    try {
+        return JSON.parse(jsonString) ?? defaultValue;
+    } catch (error) {
+        console.error("Failed to parse JSON:", error);
+        return defaultValue;
+    }
+};
+
 export default function Home() {
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
+    if (savedPets.length > 0) {
+      setPets(savedPets);
+      setSelectedPetId(savedPets[0].id);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (pets.length > 0) {
+      localStorage.setItem('pets', JSON.stringify(pets));
+    } else {
+      localStorage.removeItem('pets');
+    }
+  }, [pets]);
+  
+  const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background">
       <Tabs defaultValue="calculator" className="w-full max-w-md mx-auto">
@@ -25,13 +59,18 @@ export default function Home() {
           </TabsList>
         </div>
         <TabsContent value="calculator" className="mt-6">
-          <PetNutritionCalculator />
+          <PetNutritionCalculator selectedPet={selectedPet} />
         </TabsContent>
         <TabsContent value="chatbot" className="mt-6">
           <Chatbot />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
-          <PetProfile />
+          <PetProfile 
+            pets={pets} 
+            setPets={setPets} 
+            selectedPetId={selectedPetId} 
+            setSelectedPetId={setSelectedPetId}
+          />
         </TabsContent>
       </Tabs>
     </main>
