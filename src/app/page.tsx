@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -22,8 +23,10 @@ const DynamicTabsTrigger = dynamic(() => import('@/components/ui/tabs').then(mod
 const PetNutritionCalculator = dynamic(() => import('@/components/pet-nutrition-calculator').then(mod => mod.PetNutritionCalculator), { ssr: false });
 const Chatbot = dynamic(() => import('@/components/chatbot').then(mod => mod.Chatbot), { ssr: false });
 const PetProfile = dynamic(() => import('@/components/pet-profile').then(mod => mod.PetProfile), { ssr: false });
+const WeightTracker = dynamic(() => import('@/components/weight-tracker').then(mod => mod.WeightTracker), { ssr: false });
 
-import { Dog, MessageSquare, Heart } from 'lucide-react';
+
+import { Dog, MessageSquare, Heart, Weight } from 'lucide-react';
 
 const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
     if (!jsonString) return defaultValue;
@@ -137,6 +140,10 @@ export default function Home() {
                             <Heart />
                             Pets
                         </DynamicTabsTrigger>
+                         <DynamicTabsTrigger value="weight" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4">
+                            <Weight />
+                            Peso
+                        </DynamicTabsTrigger>
                     </DynamicTabsList>
                 </div>
                 <DynamicTabsContent value="calculator" className="mt-6">
@@ -155,6 +162,12 @@ export default function Home() {
                         setPets={setPets} 
                         selectedPetId={selectedPetId} 
                         setSelectedPetId={setSelectedPetId}
+                    />
+                </DynamicTabsContent>
+                 <DynamicTabsContent value="weight" className="mt-6">
+                    <WeightTracker
+                        pets={pets}
+                        selectedPetId={selectedPetId}
                     />
                 </DynamicTabsContent>
             </DynamicTabs>

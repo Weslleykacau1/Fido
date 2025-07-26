@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -237,41 +238,6 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                             </Button>
                             </form>
                         </Form>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-background/50">
-                        <CardHeader>
-                        <CardTitle className="font-headline text-xl flex items-center gap-2"><History className="h-5 w-5" /> Histórico de Peso de {selectedPet.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <ScrollArea className="h-40 w-full pr-4">
-                            <AnimatePresence>
-                            {(selectedPet.weightHistory ?? []).length > 0 ? (
-                                <ul className="space-y-2">
-                                {(selectedPet.weightHistory ?? []).map((entry, index) => (
-                                    <motion.li
-                                    key={index}
-                                    layout
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, x: -10 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="flex justify-between items-center p-2 rounded-md bg-muted/50"
-                                    >
-                                    <span className="font-body font-semibold">{entry.weight} kg</span>
-                                    <span className="font-body text-sm text-muted-foreground">{entry.date}</span>
-                                    </motion.li>
-                                ))}
-                                </ul>
-                            ) : (
-                                <div className="text-center text-muted-foreground font-body py-8">
-                                <LineChart className="mx-auto h-8 w-8 mb-2" />
-                                Nenhum registro de peso ainda.
-                                </div>
-                            )}
-                            </AnimatePresence>
-                        </ScrollArea>
                         </CardContent>
                     </Card>
                 </motion.div>
