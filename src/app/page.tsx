@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sparkles, AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
 
 const DynamicTabs = dynamic(() => import('@/components/ui/tabs').then((mod) => {
     // Need to do this because Tabs, TabsContent, etc are all named exports
@@ -116,9 +117,11 @@ export default function Home() {
                                     <p className="text-sm">Atualize para a versão Pro para acesso ilimitado.</p>
                                 </div>
                             </div>
-                            <Button onClick={handlePurchase} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold w-full sm:w-auto">
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Comprar Agora
+                            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold w-full sm:w-auto">
+                                <Link href="https://pay.cakto.com.br/b9ajqrx_496563" target="_blank" rel="noopener noreferrer">
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Comprar Agora
+                                </Link>
                             </Button>
                         </div>
                     </motion.div>
