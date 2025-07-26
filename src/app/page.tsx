@@ -5,7 +5,7 @@ import { PetNutritionCalculator } from '@/components/pet-nutrition-calculator';
 import { Chatbot } from '@/components/chatbot';
 import { PetProfile, Pet } from '@/components/pet-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dog, MessageSquare, User } from 'lucide-react';
+import { Dog, MessageSquare, Heart } from 'lucide-react';
 
 const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
     if (!jsonString) return defaultValue;
@@ -51,7 +51,7 @@ export default function Home() {
               Dúvidas
             </TabsTrigger>
             <TabsTrigger value="profile" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4">
-              <User />
+              <Heart />
               Pets
             </TabsTrigger>
           </TabsList>
