@@ -10,8 +10,20 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LineChart, User, Weight, History, Heart, Trash2, PlusCircle } from 'lucide-react';
+import { LineChart, User, Weight, History, Heart, Trash2, PlusCircle, PawPrint } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 const petSchema = z.object({
   id: z.string(),
@@ -87,6 +99,11 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
       setSelectedPetId(updatedPets.length > 0 ? updatedPets[0].id : null);
     }
   }
+
+  function deleteAllPets() {
+    setPets([]);
+    setSelectedPetId(null);
+  }
   
   const handlePetSelection = (petId: string) => {
       setSelectedPetId(petId);
@@ -96,7 +113,7 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
     <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
       <CardHeader className="text-center">
         <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
-          <User className="h-8 w-8 text-primary" />
+          <PawPrint className="h-8 w-8 text-primary" />
         </div>
         <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Perfis dos Pets</CardTitle>
         <CardDescription className="font-body text-lg pt-1 text-muted-foreground">Acompanhe os dados dos seus amigos</CardDescription>
@@ -140,6 +157,7 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                         <CardTitle className="font-headline text-xl flex items-center gap-2"><User className="h-5 w-5" /> Selecione o Pet</CardTitle>
                     </CardHeader>
                     <CardContent>
+                      <div className="flex flex-col gap-4">
                         <Select onValueChange={handlePetSelection} value={selectedPetId ?? undefined}>
                             <SelectTrigger className="w-full font-body">
                                 <SelectValue placeholder="Selecione um pet..." />
@@ -159,6 +177,28 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                                 </ScrollArea>
                             </SelectContent>
                         </Select>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="destructive" className="w-full font-headline font-bold">
+                                <Trash2 className="mr-2 h-5 w-5"/>
+                                Excluir Todos os Pets
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Essa ação não pode ser desfeita. Isso irá apagar permanentemente
+                                  todos os perfis de pets salvos no seu navegador.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={deleteAllPets}>Excluir Tudo</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                     </CardContent>
                 </Card>
             )}
