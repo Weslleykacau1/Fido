@@ -52,7 +52,7 @@ export default function Home() {
             </TabsTrigger>
             <TabsTrigger value="profile" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4">
               <User />
-              Perfil
+              Pets
             </TabsTrigger>
           </TabsList>
         </div>
