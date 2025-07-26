@@ -25,6 +25,7 @@ export default function Home() {
   const [isClient, setIsClient] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [lang, setLang] = useState("");
 
   // State for the trial banner
   const [showTrialBanner, setShowTrialBanner] = useState(false);
@@ -33,6 +34,7 @@ export default function Home() {
 
   useEffect(() => {
     setIsClient(true);
+    setLang(navigator.language);
   }, []);
 
 
