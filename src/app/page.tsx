@@ -169,6 +169,7 @@ export default function Home() {
                         pets={pets}
                         setPets={setPets}
                         selectedPetId={selectedPetId}
+                        setSelectedPetId={setSelectedPetId}
                     />
                 </DynamicTabsContent>
             </DynamicTabs>

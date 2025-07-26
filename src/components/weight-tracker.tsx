@@ -10,13 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Pet } from "./pet-profile"
-import { Weight as WeightIcon, LineChart as LineChartIcon, PlusCircle } from "lucide-react"
+import { Weight as WeightIcon, LineChart as LineChartIcon, PlusCircle, User as UserIcon } from "lucide-react"
 
 const weightFormSchema = z.object({
   weight: z.coerce.number().positive("O peso deve ser um número positivo.").max(150, "O peso parece muito alto para um cão."),
@@ -27,15 +29,21 @@ interface WeightTrackerProps {
   pets: Pet[];
   setPets: React.Dispatch<React.SetStateAction<Pet[]>>;
   selectedPetId: string | null;
+  setSelectedPetId: (id: string | null) => void;
 }
 
-export function WeightTracker({ pets, setPets, selectedPetId }: WeightTrackerProps) {
+export function WeightTracker({ pets, setPets, selectedPetId, setSelectedPetId }: WeightTrackerProps) {
   const selectedPet = pets.find(p => p.id === selectedPetId);
   
   const weightForm = useForm<WeightFormValues>({
     resolver: zodResolver(weightFormSchema),
     defaultValues: { weight: undefined },
   });
+
+  React.useEffect(() => {
+    // Reset form when pet changes
+    weightForm.reset();
+  }, [selectedPetId, weightForm]);
 
   function onWeightSubmit(values: WeightFormValues) {
     if (!selectedPetId) return;
@@ -62,6 +70,29 @@ export function WeightTracker({ pets, setPets, selectedPetId }: WeightTrackerPro
 
   return (
     <div className="w-full max-w-md space-y-6">
+        <Card className="w-full bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
+            <CardHeader>
+                <CardTitle className="font-headline text-xl flex items-center gap-2"><UserIcon className="h-5 w-5" /> Selecione o Pet</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Select onValueChange={setSelectedPetId} value={selectedPetId ?? undefined}>
+                    <SelectTrigger className="w-full font-body">
+                        <SelectValue placeholder="Selecione um pet..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <ScrollArea className="h-auto">
+                        {pets.map((pet) => (
+                            <SelectItem key={pet.id} value={pet.id}>
+                                {pet.name}
+                            </SelectItem>
+                        ))}
+                         {pets.length === 0 && <div className="text-sm text-muted-foreground text-center py-2 px-2">Nenhum pet salvo. Adicione um na aba Pets.</div>}
+                        </ScrollArea>
+                    </SelectContent>
+                </Select>
+            </CardContent>
+        </Card>
+
         {selectedPet && (
              <Card className="w-full bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
                 <CardHeader>
@@ -101,11 +132,11 @@ export function WeightTracker({ pets, setPets, selectedPetId }: WeightTrackerPro
             </div>
             <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Acompanhamento de Peso</CardTitle>
             <CardDescription className="font-body text-lg pt-1 text-muted-foreground">
-                {selectedPet ? `Histórico de ${selectedPet.name}` : "Selecione um pet na aba 'Pets'"}
+                {selectedPet ? `Histórico de ${selectedPet.name}` : "Selecione um pet para ver o histórico"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {chartData.length > 0 ? (
+            {selectedPet && chartData.length > 0 ? (
               <ChartContainer config={chartConfig} className="h-[250px] w-full">
                 <LineChart
                   accessibilityLayer
@@ -151,8 +182,8 @@ export function WeightTracker({ pets, setPets, selectedPetId }: WeightTrackerPro
             ) : (
                 <div className="flex flex-col items-center justify-center h-[250px] text-center text-muted-foreground font-body">
                     <LineChartIcon className="h-12 w-12 mb-4" />
-                    <p className="font-semibold">Nenhum dado de peso encontrado.</p>
-                    <p className="text-sm mt-1">Adicione um registro de peso para começar.</p>
+                    <p className="font-semibold">{selectedPet ? "Nenhum dado de peso encontrado." : "Selecione um pet para começar."}</p>
+                    <p className="text-sm mt-1">{selectedPet ? "Adicione um registro de peso para ver o gráfico." : "Use o seletor acima."}</p>
                 </div>
             )}
           </CardContent>
