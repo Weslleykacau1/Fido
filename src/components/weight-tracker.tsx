@@ -18,7 +18,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Pet } from "./pet-profile"
-import { Weight as WeightIcon, LineChart as LineChartIcon, PlusCircle, User as UserIcon } from "lucide-react"
+import { Weight as WeightIcon, LineChart as LineChartIcon, PlusCircle, User as UserIcon, History } from "lucide-react"
 
 const weightFormSchema = z.object({
   weight: z.coerce.number().positive("O peso deve ser um número positivo.").max(150, "O peso parece muito alto para um cão."),
@@ -132,7 +132,7 @@ export function WeightTracker({ pets, setPets, selectedPetId, setSelectedPetId }
             </div>
             <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Acompanhamento de Peso</CardTitle>
             <CardDescription className="font-body text-lg pt-1 text-muted-foreground">
-                {selectedPet ? `Histórico de ${selectedPet.name}` : "Selecione um pet para ver o histórico"}
+                {selectedPet ? `Gráfico de ${selectedPet.name}` : "Selecione um pet para ver o histórico"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -188,6 +188,26 @@ export function WeightTracker({ pets, setPets, selectedPetId, setSelectedPetId }
             )}
           </CardContent>
         </Card>
+        
+        {selectedPet && selectedPet.weightHistory && selectedPet.weightHistory.length > 0 && (
+            <Card className="w-full bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl flex items-center gap-2"><History className="h-5 w-5" /> Histórico de Registros</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-40">
+                        <div className="space-y-4">
+                            {selectedPet.weightHistory.map((entry, index) => (
+                                <div key={index} className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                                    <p className="font-body font-semibold">{entry.date}</p>
+                                    <p className="font-headline text-lg text-primary">{entry.weight} kg</p>
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+        )}
     </div>
   )
 }
