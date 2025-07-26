@@ -140,7 +140,7 @@ export default function Home() {
                     <DynamicTabsList className="h-auto md:h-12 rounded-xl p-1 flex-wrap md:flex-nowrap">
                         <DynamicTabsTrigger value="calculator" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
                             <Dog />
-                            Calculadora
+                            Calcular
                         </DynamicTabsTrigger>
                         <DynamicTabsTrigger value="chatbot" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
                             <MessageSquare />
