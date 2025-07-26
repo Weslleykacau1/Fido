@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -79,12 +80,12 @@ export function Chatbot() {
     };
 
     return (
-        <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
+        <Card className="w-full bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
             <CardHeader className="text-center">
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                     <MessageSquare className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Converse com a IA</CardTitle>
+                <CardTitle className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-foreground">Converse com a IA</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col h-96">

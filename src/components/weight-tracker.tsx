@@ -1,5 +1,5 @@
 
-"use client"
+"use client";
 
 import * as React from "react"
 import { useForm } from 'react-hook-form';
@@ -69,7 +69,7 @@ export function WeightTracker({ pets, setPets, selectedPetId, setSelectedPetId }
   }
 
   return (
-    <div className="w-full max-w-md space-y-6">
+    <div className="w-full space-y-6">
         <Card className="w-full bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
             <CardHeader>
                 <CardTitle className="font-headline text-xl flex items-center gap-2"><UserIcon className="h-5 w-5" /> Selecione o Pet</CardTitle>
@@ -130,8 +130,8 @@ export function WeightTracker({ pets, setPets, selectedPetId, setSelectedPetId }
              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                 <LineChartIcon className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Acompanhamento de Peso</CardTitle>
-            <CardDescription className="font-body text-lg pt-1 text-muted-foreground">
+            <CardTitle className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-foreground">Acompanhamento de Peso</CardTitle>
+            <CardDescription className="font-body text-base md:text-lg pt-1 text-muted-foreground">
                 {selectedPet ? `Gráfico de ${selectedPet.name}` : "Selecione um pet para ver o histórico"}
             </CardDescription>
           </CardHeader>

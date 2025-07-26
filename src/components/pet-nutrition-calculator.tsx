@@ -376,8 +376,8 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                             <div className="space-y-4">
                                 <div className="w-full text-center p-6 bg-primary/10 rounded-xl border border-primary/20 relative">
                                     <p className="font-body text-muted-foreground">Porção diária para {submittedData.dogName}:</p>
-                                    <p className="font-headline text-6xl font-bold text-primary my-2">
-                                        {Math.round(result.foodAmountInGrams)}<span className="text-3xl font-body text-muted-foreground/80">g</span>
+                                    <p className="font-headline text-5xl md:text-6xl font-bold text-primary my-2">
+                                        {Math.round(result.foodAmountInGrams)}<span className="text-2xl md:text-3xl font-body text-muted-foreground/80">g</span>
                                     </p>
                                     <p className="font-body text-sm text-muted-foreground">dividido em 2-3 refeições.</p>
                                 </div>

@@ -90,13 +90,13 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
   }
 
   return (
-    <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
+    <Card className="w-full bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
       <CardHeader className="text-center">
         <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
           <PawPrint className="h-8 w-8 text-primary" />
         </div>
-        <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Perfis dos Pets</CardTitle>
-        <CardDescription className="font-body text-lg pt-1 text-muted-foreground">Acompanhe os dados dos seus amigos</CardDescription>
+        <CardTitle className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-foreground">Perfis dos Pets</CardTitle>
+        <CardDescription className="font-body text-base md:text-lg pt-1 text-muted-foreground">Acompanhe os dados dos seus amigos</CardDescription>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[500px] w-full pr-4">
