@@ -107,9 +107,13 @@ const faqs = {
     keywords: ["sobrepeso", "cão gordo", "peso do cão"],
     answer: "Verifique se consegue sentir as costelas do cão com leve pressão. Se ele tem cintura pouco definida ou barriga proeminente, pode estar com sobrepeso. Consulte um veterinário para ajustar a dieta."
   },
+  "nao_come": {
+    keywords: ["não come", "recusa ração", "sem apetite", "não quer comer"],
+    answer: "A recusa em comer pode ter várias causas. Primeiro, verifique se houve alguma mudança na rotina ou estresse. Você pode tentar misturar um pouco de ração úmida ou um caldo de galinha (sem tempero) para tornar o alimento mais atrativo.\n\nNo entanto, a falta de apetite pode ser um sinal de problemas de saúde. Se a recusa persistir por mais de 24 horas, ou se vier acompanhada de outros sintomas como vômito, diarreia ou letargia, **procure um veterinário imediatamente**."
+  },
   "ossos": {
     keywords: ["osso", "ossos"],
-    answer: "Não é recomendado dar ossos para cachorros, especialmente ossos cozidos ou pequenos como os de frango, pois podem lascar e causar perfurações no trato digestivo, além de risco de engasgo. Ossos naturais crus, embora possam ser roídos com moderação, também apresentam riscos de contaminação bacteriana e quebra de dentes.\n\n**Riscos:**\n- **Lesões graves:** Perfurações no esôfago, estômago ou intestino.\n- **Engasgos:** Risco de asfixia, especialmente com ossos pequenos.\n- **Problemas dentários:** Fraturas nos dentes.\n- **Contaminação:** Ossos crus podem ter bactérias como Salmonella.\n\n**Alternativas Seguras:**\n- Ossos de nylon ou brinquedos específicos para roer, sempre sob supervisão.\n\n**Importante:** Consulte sempre um veterinário antes de oferecer qualquer tipo de osso. Se seu cão ingerir um e apresentar sintomas (vômito, diarreia), procure um veterinário imediatamente."
+    answer: "Não é recomendado dar ossos para cachorros, especialmente cozidos, pois podem lascar e causar perfurações, engasgos e problemas dentários. Ossos crus também oferecem risco de contaminação por bactérias como Salmonella.\n\n**Riscos Graves:**\n- Perfurações no esôfago, estômago ou intestino.\n- Asfixia e engasgos.\n- Fraturas nos dentes.\n\n**Alternativas Seguras:**\n- Brinquedos de nylon ou ossos recreativos feitos de materiais seguros, sempre sob supervisão.\n\n**Importante:** Consulte sempre um veterinário antes de oferecer qualquer tipo de osso. Se seu cão ingerir um e apresentar sintomas (vômito, diarreia), procure ajuda profissional imediatamente."
   }
 };
 
@@ -150,7 +154,7 @@ type Message = {
 
 const suggestedQuestions = [
     "Qual a dieta do Labrador?",
-    "Posso dar ossos?",
+    "Meu cachorro não quer comer.",
     "Quantas vezes devo alimentar meu cão?",
 ];
 
