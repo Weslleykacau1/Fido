@@ -220,12 +220,12 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
 
 
     return (
-        <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
+        <Card className="w-full bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
             <CardHeader className="text-center">
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
                     <Dog className="h-8 w-8 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-4xl font-bold tracking-tight text-foreground">FidoFeed.ai</CardTitle>
+                <CardTitle className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-foreground">FidoFeed.ai</CardTitle>
                 <CardDescription className="font-body text-lg pt-1 text-muted-foreground">O nutricionista pessoal do seu cão</CardDescription>
             </CardHeader>
             <CardContent>
