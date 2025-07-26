@@ -25,7 +25,8 @@ export default function Home() {
     const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
     if (savedPets.length > 0) {
       setPets(savedPets);
-      setSelectedPetId(savedPets[0].id);
+      // Do not autoselect a pet
+      // setSelectedPetId(savedPets[0].id); 
     }
   }, []);
 
@@ -33,7 +34,9 @@ export default function Home() {
     if (pets.length > 0) {
       localStorage.setItem('pets', JSON.stringify(pets));
     } else {
+      // If there are no pets, remove from local storage and reset selection
       localStorage.removeItem('pets');
+      setSelectedPetId(null);
     }
   }, [pets]);
   
@@ -59,7 +62,11 @@ export default function Home() {
           </TabsList>
         </div>
         <TabsContent value="calculator" className="mt-6">
-          <PetNutritionCalculator selectedPet={selectedPet} />
+          <PetNutritionCalculator 
+            selectedPet={selectedPet} 
+            pets={pets}
+            setSelectedPetId={setSelectedPetId}
+          />
         </TabsContent>
         <TabsContent value="chatbot" className="mt-6">
           <Chatbot />

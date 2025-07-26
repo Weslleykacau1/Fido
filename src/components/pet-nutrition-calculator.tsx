@@ -17,7 +17,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Pet } from './pet-profile';
 
 const formSchema = z.object({
-    dogName: z.string().min(2, { message: "O nome precisa ter ao menos 2 letras." }).max(50, {message: "O nome é muito longo."}),
+    dogId: z.string().optional(),
     breed: z.string({ required_error: 'Por favor, selecione uma raça.' }).min(1, { message: "Por favor, selecione uma raça." }),
     ageInMonths: z.coerce.number({ invalid_type_error: "Por favor, insira uma idade válida." }).positive({ message: "A idade deve ser um número positivo." }).max(240, { message: "A idade parece muito alta." }),
 });
@@ -92,17 +92,23 @@ const getLifeStage = (ageInMonths: number) => {
     }
 }
 
-export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | null }) {
+interface PetNutritionCalculatorProps {
+  selectedPet: Pet | null;
+  pets: Pet[];
+  setSelectedPetId: (id: string | null) => void;
+}
+
+export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: PetNutritionCalculatorProps) {
     const [result, setResult] = useState<ResultState>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showFooter, setShowFooter] = useState(false);
-    const [submittedData, setSubmittedData] = useState<FormValues | null>(null);
+    const [submittedData, setSubmittedData] = useState<FormValues & {dogName: string} | null>(null);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            dogName: "",
+            dogId: "",
             breed: "",
             ageInMonths: undefined,
         },
@@ -111,13 +117,13 @@ export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | nul
     useEffect(() => {
         if (selectedPet) {
             form.reset({
-                dogName: selectedPet.name,
+                dogId: selectedPet.id,
                 breed: selectedPet.breed || "",
                 ageInMonths: selectedPet.ageInMonths || undefined,
             });
         } else {
-            form.reset({
-                dogName: "",
+             form.reset({
+                dogId: "",
                 breed: "",
                 ageInMonths: undefined,
             })
@@ -129,7 +135,9 @@ export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | nul
         setShowFooter(true);
         setResult(null);
         setError(null);
-        setSubmittedData(values);
+        
+        const dogName = pets.find(p => p.id === values.dogId)?.name ?? "Seu cão";
+        setSubmittedData({...values, dogName});
 
         const response = await getFoodAmount({
             breed: values.breed,
@@ -153,6 +161,20 @@ export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | nul
     
     const lifeStageInfo = submittedData ? getLifeStage(submittedData.ageInMonths) : null;
 
+    const handlePetSelection = (dogId: string) => {
+      if (dogId === 'new') {
+        setSelectedPetId(null);
+        form.reset({
+          dogId: "",
+          breed: "",
+          ageInMonths: undefined,
+        });
+      } else {
+        setSelectedPetId(dogId);
+      }
+    }
+
+
     return (
         <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
             <CardHeader className="text-center">
@@ -167,13 +189,28 @@ export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | nul
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                         <FormField
                             control={form.control}
-                            name="dogName"
+                            name="dogId"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Heart className="h-4 w-4" /> Nome do Pet</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="ex: Bob" {...field} className="font-body" />
-                                    </FormControl>
+                                    <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Heart className="h-4 w-4" /> Selecionar Pet</FormLabel>
+                                     <Select onValueChange={handlePetSelection} defaultValue={field.value} value={field.value ?? ""}>
+                                        <FormControl>
+                                        <SelectTrigger className="font-body">
+                                            <SelectValue placeholder="Selecione um pet salvo..." />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                        <ScrollArea className="h-auto font-body">
+                                            {pets.map((pet) => (
+                                            <SelectItem key={pet.id} value={pet.id}>
+                                                {pet.name}
+                                            </SelectItem>
+                                            ))}
+                                            {pets.length > 0 && <SelectItem value="new">Nenhum (Calcular para um novo pet)</SelectItem>}
+                                            {pets.length === 0 && <SelectItem value="" disabled>Nenhum pet salvo. Adicione um no Perfil.</SelectItem>}
+                                        </ScrollArea>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -184,7 +221,7 @@ export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | nul
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Bone className="h-4 w-4" /> Raça do Cão</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!form.watch('dogId')}>
                                     <FormControl>
                                       <SelectTrigger className="font-body">
                                         <SelectValue placeholder="Selecione uma raça" />
@@ -211,13 +248,13 @@ export function PetNutritionCalculator({ selectedPet }: { selectedPet: Pet | nul
                                 <FormItem>
                                     <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Hash className="h-4 w-4" /> Idade em meses</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder="ex: 5" {...field} value={field.value ?? ''} className="font-body" />
+                                        <Input type="number" placeholder="ex: 5" {...field} value={field.value ?? ''} className="font-body" disabled={!form.watch('dogId')} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" disabled={isLoading} className="w-full font-headline font-bold text-lg py-6 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 transition-shadow duration-300">
+                        <Button type="submit" disabled={isLoading || !form.watch('dogId')} className="w-full font-headline font-bold text-lg py-6 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 transition-shadow duration-300">
                             {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PawPrint className="mr-2 h-5 w-5" />}
                             Calcular
                         </Button>
