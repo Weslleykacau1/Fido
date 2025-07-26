@@ -10,12 +10,13 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog, ChevronsRight, Heart, Weight } from 'lucide-react';
+import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog, ChevronsRight, Heart, Weight, Share2 } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from './ui/scroll-area';
 import { Pet } from './pet-profile';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
     dogId: z.string().optional(),
@@ -106,6 +107,7 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
     const [isLoading, setIsLoading] = useState(false);
     const [showFooter, setShowFooter] = useState(false);
     const [submittedData, setSubmittedData] = useState<FormValues & {dogName: string} | null>(null);
+    const { toast } = useToast();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -184,6 +186,37 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
       }
     }
 
+    const handleShare = async () => {
+        if (!result || !submittedData) return;
+        
+        const shareText = `🐶 FidoFeed.ai: A recomendação diária de ração para ${submittedData.dogName} é de ${Math.round(result.foodAmountInGrams)}g. Consulte sempre um veterinário!`;
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'FidoFeed.ai - Recomendação de Ração',
+                    text: shareText,
+                });
+            } catch (error) {
+                console.error('Erro ao compartilhar', error);
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(shareText);
+                toast({
+                    title: "Copiado!",
+                    description: "O resultado foi copiado para a área de transferência.",
+                });
+            } catch (err) {
+                 toast({
+                    title: "Oops!",
+                    description: "Não foi possível copiar o resultado.",
+                    variant: "destructive"
+                });
+            }
+        }
+    };
+
 
     return (
         <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
@@ -217,7 +250,7 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                                                 {pet.name}
                                             </SelectItem>
                                             ))}
-                                            {pets.length === 0 && <SelectItem value="" disabled>Nenhum pet salvo. Adicione um no Perfil.</SelectItem>}
+                                            {pets.length === 0 && <SelectItem value="" disabled>Nenhum pet salvo. Adicione um na aba Pets.</SelectItem>}
                                         </ScrollArea>
                                         </SelectContent>
                                     </Select>
@@ -340,12 +373,15 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
 
                         {result && submittedData && lifeStageInfo && (
                             <div className="space-y-4">
-                                <div className="w-full text-center p-6 bg-primary/10 rounded-xl border border-primary/20">
+                                <div className="w-full text-center p-6 bg-primary/10 rounded-xl border border-primary/20 relative">
                                     <p className="font-body text-muted-foreground">Porção diária para {submittedData.dogName}:</p>
                                     <p className="font-headline text-6xl font-bold text-primary my-2">
                                         {Math.round(result.foodAmountInGrams)}<span className="text-3xl font-body text-muted-foreground/80">g</span>
                                     </p>
                                     <p className="font-body text-sm text-muted-foreground">dividido em 2-3 refeições.</p>
+                                    <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-primary hover:bg-primary/20" onClick={handleShare}>
+                                        <Share2 className="h-5 w-5" />
+                                    </Button>
                                 </div>
 
                                 <Card className="bg-accent/20 border-accent/30">
@@ -376,3 +412,5 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
         </Card>
     );
 }
+
+    
