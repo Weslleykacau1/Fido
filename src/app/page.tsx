@@ -51,6 +51,14 @@ export default function Home() {
     useEffect(() => {
         setLang(navigator.language);
 
+        // Check for purchase success in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('purchase') === 'success') {
+            localStorage.setItem('hasPurchased', JSON.stringify(true));
+            // Remove query params from URL without reloading
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
         const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
         setPets(savedPets);
         if (savedPets.length > 0) {
