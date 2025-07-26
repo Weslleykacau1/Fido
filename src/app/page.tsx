@@ -104,10 +104,7 @@ export default function Home() {
     const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
 
     return (
-        <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background relative">
-             <div className="absolute top-4 right-4">
-                <ThemeToggle />
-            </div>
+        <main className="flex min-h-screen w-full flex-col items-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background relative">
             
             <AnimatePresence>
                 {showTrialBanner && !hasPurchased && (
@@ -139,7 +136,7 @@ export default function Home() {
             </AnimatePresence>
             
             <DynamicTabs defaultValue="calculator" className="w-full max-w-md md:max-w-2xl mx-auto">
-                <div className="flex justify-center">
+                <div className="flex justify-center items-center gap-4 mb-4">
                     <DynamicTabsList className="h-auto md:h-12 rounded-xl p-1 flex-wrap md:flex-nowrap">
                         <DynamicTabsTrigger value="calculator" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
                             <Dog />
@@ -158,6 +155,7 @@ export default function Home() {
                             Peso
                         </DynamicTabsTrigger>
                     </DynamicTabsList>
+                    <ThemeToggle />
                 </div>
                 <DynamicTabsContent value="calculator" className="mt-6">
                     <PetNutritionCalculator 
