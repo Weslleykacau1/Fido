@@ -127,7 +127,7 @@ export default function Home() {
                                     <p className="text-sm">Atualize para a versão Pro para acesso ilimitado.</p>
                                 </div>
                             </div>
-                            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold w-full sm:w-auto">
+                            <Button asChild className="bg-green-600 hover:bg-green-700 text-white font-bold w-full sm:w-auto">
                                 <Link href="https://pay.cakto.com.br/b9ajqrx_496563" target="_blank" rel="noopener noreferrer">
                                     <Sparkles className="mr-2 h-4 w-4" />
                                     Comprar Agora
