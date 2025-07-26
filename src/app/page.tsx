@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dog, MessageSquare, Heart, Sparkles, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
     if (!jsonString) return defaultValue;
@@ -20,6 +22,7 @@ const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
 };
 
 export default function Home() {
+  const [isClient, setIsClient] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
 
@@ -28,9 +31,15 @@ export default function Home() {
   const [trialDaysLeft, setTrialDaysLeft] = useState(7);
   const [hasPurchased, setHasPurchased] = useState(false);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   useEffect(() => {
-    // All localStorage logic is now safely in useEffect
+    if (!isClient) return;
+
+    // All localStorage logic is now safely in useEffect and guarded by isClient
     const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
     setPets(savedPets);
     if (savedPets.length > 0) {
@@ -60,13 +69,15 @@ export default function Home() {
         }
     }
 
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
+    if (!isClient) return;
+    // This effect should also be guarded by isClient
     if (pets.length > 0 || localStorage.getItem('pets')) {
       localStorage.setItem('pets', JSON.stringify(pets));
     }
-  }, [pets]);
+  }, [pets, isClient]);
 
   const handlePurchase = () => {
     localStorage.setItem('hasPurchased', JSON.stringify(true));
@@ -75,6 +86,17 @@ export default function Home() {
   }
 
   const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
+
+  if (!isClient) {
+    return (
+        <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background">
+            <div className="w-full max-w-md mx-auto space-y-8">
+                 <Skeleton className="h-12 w-3/4 mx-auto rounded-xl" />
+                 <Skeleton className="h-[600px] w-full rounded-2xl" />
+            </div>
+        </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background">
