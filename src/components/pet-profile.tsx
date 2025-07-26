@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LineChart, User, Weight, History, Mail } from 'lucide-react';
+import { LineChart, User, Weight, History, Mail, Heart } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const weightFormSchema = z.object({
@@ -23,6 +23,11 @@ const ownerFormSchema = z.object({
 });
 type OwnerFormValues = z.infer<typeof ownerFormSchema>;
 
+const petFormSchema = z.object({
+  petName: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
+});
+type PetFormValues = z.infer<typeof petFormSchema>;
+
 
 type WeightEntry = {
   weight: number;
@@ -32,6 +37,7 @@ type WeightEntry = {
 export function PetProfile() {
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [ownerInfo, setOwnerInfo] = useState<OwnerFormValues | null>(null);
+  const [petInfo, setPetInfo] = useState<PetFormValues | null>(null);
 
   const weightForm = useForm<WeightFormValues>({
     resolver: zodResolver(weightFormSchema),
@@ -45,6 +51,13 @@ export function PetProfile() {
     defaultValues: {
       ownerName: "",
       ownerEmail: ""
+    }
+  });
+
+  const petForm = useForm<PetFormValues>({
+    resolver: zodResolver(petFormSchema),
+    defaultValues: {
+      petName: "",
     }
   });
 
@@ -64,6 +77,11 @@ export function PetProfile() {
     // For now, we just show a success state or message.
     ownerForm.reset(values); // Keep the form populated with the saved data
   }
+  
+  function onPetSubmit(values: PetFormValues) {
+    setPetInfo(values);
+    petForm.reset(values);
+  }
 
 
   return (
@@ -78,6 +96,35 @@ export function PetProfile() {
       <CardContent>
         <ScrollArea className="h-[500px] w-full pr-4">
             <div className="space-y-6">
+
+            <Card className="bg-background/50">
+                <CardHeader>
+                <CardTitle className="font-headline text-xl flex items-center gap-2"><Heart className="h-5 w-5" /> Dados do Pet</CardTitle>
+                </CardHeader>
+                <CardContent>
+                <Form {...petForm}>
+                    <form onSubmit={petForm.handleSubmit(onPetSubmit)} className="space-y-4">
+                    <FormField
+                        control={petForm.control}
+                        name="petName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="font-headline text-md font-semibold">Nome do Pet</FormLabel>
+                            <FormControl>
+                            <Input placeholder="Bob" {...field} className="font-body" />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <Button type="submit" className="w-full font-headline font-bold">
+                        Salvar Nome do Pet
+                    </Button>
+                    </form>
+                </Form>
+                </CardContent>
+            </Card>
+
             <Card className="bg-background/50">
                 <CardHeader>
                 <CardTitle className="font-headline text-xl flex items-center gap-2"><User className="h-5 w-5" /> Dados do Dono</CardTitle>
