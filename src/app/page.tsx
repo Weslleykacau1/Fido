@@ -167,6 +167,7 @@ export default function Home() {
                  <DynamicTabsContent value="weight" className="mt-6">
                     <WeightTracker
                         pets={pets}
+                        setPets={setPets}
                         selectedPetId={selectedPetId}
                     />
                 </DynamicTabsContent>

@@ -50,21 +50,12 @@ const addPetFormSchema = z.object({
 });
 type AddPetFormValues = z.infer<typeof addPetFormSchema>;
 
-const weightFormSchema = z.object({
-  weight: z.coerce.number().positive("O peso deve ser um número positivo.").max(150, "O peso parece muito alto para um cão."),
-});
-type WeightFormValues = z.infer<typeof weightFormSchema>;
 
 export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: PetProfileProps) {
 
   const addPetForm = useForm<AddPetFormValues>({
     resolver: zodResolver(addPetFormSchema),
     defaultValues: { petName: "" },
-  });
-
-  const weightForm = useForm<WeightFormValues>({
-    resolver: zodResolver(weightFormSchema),
-    defaultValues: { weight: undefined },
   });
   
   const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
@@ -79,18 +70,6 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
     setPets(updatedPets);
     setSelectedPetId(newPet.id);
     addPetForm.reset();
-  }
-
-  function onWeightSubmit(values: WeightFormValues) {
-    if (!selectedPetId) return;
-    const newEntry = {
-      weight: values.weight,
-      date: new Date().toLocaleDateString('pt-BR'),
-    };
-    setPets(prev => prev.map(p =>
-      p.id === selectedPetId ? { ...p, weightHistory: [newEntry, ...(p.weightHistory ?? [])] } : p
-    ));
-    weightForm.reset();
   }
   
   function deletePet(petId: string) {
@@ -202,46 +181,6 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                         </div>
                     </CardContent>
                 </Card>
-            )}
-
-            {selectedPet && (
-             <AnimatePresence>
-                <motion.div
-                    key={selectedPetId}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="space-y-6"
-                >
-                    <Card className="bg-background/50">
-                        <CardHeader>
-                        <CardTitle className="font-headline text-xl flex items-center gap-2"><Weight className="h-5 w-5" /> Atualizar Peso de {selectedPet.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <Form {...weightForm}>
-                            <form onSubmit={weightForm.handleSubmit(onWeightSubmit)} className="space-y-4">
-                            <FormField
-                                control={weightForm.control}
-                                name="weight"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="font-headline text-md font-semibold">Novo peso (kg)</FormLabel>
-                                    <FormControl>
-                                    <Input type="number" step="0.1" placeholder="ex: 15.5" {...field} value={field.value ?? ''} className="font-body" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <Button type="submit" className="w-full font-headline font-bold">
-                                Adicionar Registro de Peso
-                            </Button>
-                            </form>
-                        </Form>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-             </AnimatePresence>
             )}
             </div>
         </ScrollArea>
