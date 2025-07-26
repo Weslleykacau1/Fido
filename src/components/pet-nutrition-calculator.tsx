@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -379,9 +380,6 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                                         {Math.round(result.foodAmountInGrams)}<span className="text-3xl font-body text-muted-foreground/80">g</span>
                                     </p>
                                     <p className="font-body text-sm text-muted-foreground">dividido em 2-3 refeições.</p>
-                                    <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-primary hover:bg-primary/20" onClick={handleShare}>
-                                        <Share2 className="h-5 w-5" />
-                                    </Button>
                                 </div>
 
                                 <Card className="bg-accent/20 border-accent/30">
