@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Pet } from '@/components/pet-profile';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Sparkles, AlertTriangle, Siren } from 'lucide-react';
+import { Sparkles, AlertTriangle, MessageSquare, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { LoadingScreen } from '@/components/loading-screen';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -28,7 +28,7 @@ const Chatbot = dynamic(() => import('@/components/chatbot').then(mod => mod.Cha
 const PetProfile = dynamic(() => import('@/components/pet-profile').then(mod => mod.PetProfile), { ssr: false });
 const WeightTracker = dynamic(() => import('@/components/weight-tracker').then(mod => mod.WeightTracker), { ssr: false });
 
-import { Dog, MessageSquare, Heart, Weight } from 'lucide-react';
+import { Dog, Heart, Weight } from 'lucide-react';
 
 const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
     if (!jsonString) return defaultValue;
@@ -47,6 +47,9 @@ export default function Home() {
     const [showTrialBanner, setShowTrialBanner] = useState(false);
     const [trialDaysLeft, setTrialDaysLeft] = useState(7);
     const [hasPurchased, setHasPurchased] = useState(false);
+    
+    const [activeTab, setActiveTab] = useState("calculator");
+
 
     useEffect(() => {
         // Check for purchase success in URL
@@ -103,88 +106,94 @@ export default function Home() {
     const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
 
     return (
-        <main className="flex min-h-screen w-full flex-col items-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background relative">
-            
-            <AnimatePresence>
-                {showTrialBanner && !hasPurchased && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="w-full max-w-md md:max-w-4xl mx-auto mb-4"
-                    >
-                        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-3 text-center sm:text-left">
-                                <AlertTriangle className="h-6 w-6 shrink-0" />
-                                <div className="font-body">
-                                    <p className="font-bold">
-                                        {trialDaysLeft > 0 ? `Você tem ${trialDaysLeft} dias de teste restantes.` : "Seu período de teste acabou."}
-                                    </p>
-                                    <p className="text-sm">Atualize para a versão Pro para acesso ilimitado.</p>
+        <div className="relative min-h-screen">
+            <main className="flex w-full flex-col items-center bg-background p-4 pb-28 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background">
+                
+                <AnimatePresence>
+                    {showTrialBanner && !hasPurchased && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="w-full max-w-md md:max-w-2xl mx-auto mb-4"
+                        >
+                            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-3 text-center sm:text-left">
+                                    <AlertTriangle className="h-6 w-6 shrink-0" />
+                                    <div className="font-body">
+                                        <p className="font-bold">
+                                            {trialDaysLeft > 0 ? `Você tem ${trialDaysLeft} dias de teste restantes.` : "Seu período de teste acabou."}
+                                        </p>
+                                        <p className="text-sm">Atualize para a versão Pro para acesso ilimitado.</p>
+                                    </div>
                                 </div>
+                                <Button asChild className="bg-green-600 hover:bg-green-700 text-white font-bold w-full sm:w-auto flex-shrink-0">
+                                    <Link href="https://pay.cakto.com.br/b9ajqrx_496563" target="_blank" rel="noopener noreferrer">
+                                        <Sparkles className="mr-2 h-4 w-4" />
+                                        Comprar Agora
+                                    </Link>
+                                </Button>
                             </div>
-                            <Button asChild className="bg-green-600 hover:bg-green-700 text-white font-bold w-full sm:w-auto flex-shrink-0">
-                                <Link href="https://pay.cakto.com.br/b9ajqrx_496563" target="_blank" rel="noopener noreferrer">
-                                    <Sparkles className="mr-2 h-4 w-4" />
-                                    Comprar Agora
-                                </Link>
-                            </Button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            
-            <DynamicTabs defaultValue="calculator" className="w-full max-w-md md:max-w-4xl mx-auto">
-                <div className="flex justify-center items-center gap-4 mb-4">
-                    <DynamicTabsList className="h-auto md:h-12 rounded-xl p-1 flex-wrap md:flex-nowrap">
-                        <DynamicTabsTrigger value="calculator" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
-                            <Dog />
-                            Calcular
-                        </DynamicTabsTrigger>
-                        <DynamicTabsTrigger value="chatbot" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
-                            <MessageSquare />
-                            Dúvidas
-                        </DynamicTabsTrigger>
-                        <DynamicTabsTrigger value="profile" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
-                            <Heart />
-                            Pets
-                        </DynamicTabsTrigger>
-                         <DynamicTabsTrigger value="weight" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
-                            <Weight />
-                            Peso
-                        </DynamicTabsTrigger>
-                    </DynamicTabsList>
-                    <ThemeToggle />
-                </div>
-                <DynamicTabsContent value="calculator" className="mt-6">
-                    <PetNutritionCalculator 
-                        selectedPet={selectedPet} 
-                        pets={pets}
-                        setSelectedPetId={setSelectedPetId}
-                    />
-                </DynamicTabsContent>
-                <DynamicTabsContent value="chatbot" className="mt-6">
-                    <Chatbot />
-                </DynamicTabsContent>
-                <DynamicTabsContent value="profile" className="mt-6">
-                    <PetProfile 
-                        pets={pets} 
-                        setPets={setPets} 
-                        selectedPetId={selectedPetId} 
-                        setSelectedPetId={setSelectedPetId}
-                    />
-                </DynamicTabsContent>
-                 <DynamicTabsContent value="weight" className="mt-6">
-                    <WeightTracker
-                        pets={pets}
-                        setPets={setPets}
-                        selectedPetId={selectedPetId}
-                        setSelectedPetId={setSelectedPetId}
-                    />
-                </DynamicTabsContent>
-            </DynamicTabs>
-        </main>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                
+                <DynamicTabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-md md:max-w-2xl mx-auto">
+                    <div className="flex justify-center items-center gap-4 mb-4">
+                        <DynamicTabsList className="h-auto md:h-12 rounded-xl p-1 flex-wrap md:flex-nowrap">
+                            <DynamicTabsTrigger value="calculator" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
+                                <Dog />
+                                Calcular
+                            </DynamicTabsTrigger>
+                            <DynamicTabsTrigger value="profile" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
+                                <Heart />
+                                Pets
+                            </DynamicTabsTrigger>
+                            <DynamicTabsTrigger value="weight" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
+                                <Weight />
+                                Peso
+                            </DynamicTabsTrigger>
+                        </DynamicTabsList>
+                        <ThemeToggle />
+                    </div>
+                    <DynamicTabsContent value="calculator" className="mt-6">
+                        <PetNutritionCalculator 
+                            selectedPet={selectedPet} 
+                            pets={pets}
+                            setSelectedPetId={setSelectedPetId}
+                        />
+                    </DynamicTabsContent>
+                    <DynamicTabsContent value="chatbot" className="mt-6">
+                        <Chatbot />
+                    </DynamicTabsContent>
+                    <DynamicTabsContent value="profile" className="mt-6">
+                        <PetProfile 
+                            pets={pets} 
+                            setPets={setPets} 
+                            selectedPetId={selectedPetId} 
+                            setSelectedPetId={setSelectedPetId}
+                        />
+                    </DynamicTabsContent>
+                    <DynamicTabsContent value="weight" className="mt-6">
+                        <WeightTracker
+                            pets={pets}
+                            setPets={setPets}
+                            selectedPetId={selectedPetId}
+                            setSelectedPetId={setSelectedPetId}
+                        />
+                    </DynamicTabsContent>
+                </DynamicTabs>
+            </main>
+             <footer className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-border p-4 flex justify-center z-10">
+                <Button 
+                    onClick={() => setActiveTab("chatbot")}
+                    className="font-headline text-lg rounded-full shadow-lg shadow-primary/30"
+                    size="lg"
+                >
+                    <MessageSquare className="mr-2 h-5 w-5" />
+                    Dúvidas? Fale com a IA
+                </Button>
+            </footer>
+        </div>
     );
 }
-
-    
