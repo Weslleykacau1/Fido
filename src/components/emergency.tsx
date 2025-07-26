@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Siren, MapPin, Loader2, AlertTriangle, ExternalLink, Phone } from 'lucide-react';
 
-// This is a placeholder for a real veterinarian object you would get from an API
 type Vet = {
+    id: string;
     name: string;
     address: string;
-    phone: string;
-    distance: number; // in km
+    phone?: string;
+    distance: number; 
     url: string;
 }
 
@@ -26,21 +26,60 @@ export function Emergency() {
         setError(null);
         setVets([]);
 
-        // In a real app, you would use the Geolocation API here.
-        // navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-        
-        // Simulating an API call with a delay and an error
-        setTimeout(() => {
-            setError("Para ativar esta função, é necessário adicionar uma chave de API do Google Maps Places ao código-fonte. A busca de veterinários em tempo real não está ativa no momento.");
+        if (!process.env.NEXT_PUBLIC_MAPBOX_API_KEY) {
+            setError("Chave de API da Mapbox não encontrada. Por favor, adicione a chave ao arquivo .env e reinicie o servidor.");
             setIsLoading(false);
+            return;
+        }
 
-            // Placeholder data to show the UI structure
-            setVets([
-                { name: "Clínica Vet Exemplo 24h", address: "Rua das Flores, 123", phone: "(11) 99999-8888", distance: 2.5, url: "https://www.google.com/maps" },
-                { name: "Hospital Veterinário de Exemplo", address: "Avenida dos Animais, 456", phone: "(11) 98888-7777", distance: 4.1, url: "https://www.google.com/maps" },
-            ]);
+        if (!navigator.geolocation) {
+            setError("Geolocalização não é suportada por este navegador.");
+            setIsLoading(false);
+            return;
+        }
 
-        }, 1500);
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                fetchVets(longitude, latitude);
+            },
+            (err) => {
+                setError(`Erro ao obter localização: ${err.message}. Verifique as permissões de localização do seu navegador.`);
+                setIsLoading(false);
+            }
+        );
+    };
+
+    const fetchVets = async (longitude: number, latitude: number) => {
+        const apiKey = process.env.NEXT_PUBLIC_MAPBOX_API_KEY;
+        const query = 'veterinário,clínica veterinária';
+        const radiusInMeters = 10000; // 10km
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?proximity=${longitude},${latitude}&limit=10&radius=${radiusInMeters}&access_token=${apiKey}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.features && data.features.length > 0) {
+                const foundVets: Vet[] = data.features.map((feature: any) => ({
+                    id: feature.id,
+                    name: feature.text,
+                    address: feature.place_name.split(',').slice(1).join(',').trim(),
+                    phone: feature.properties?.tel,
+                    // Mapbox distance is not directly provided in geocoding, so we generate a maps link instead.
+                    // For a real app, distance calculation would be a good addition.
+                    distance: 0, // Placeholder
+                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(feature.place_name)}`
+                }));
+                setVets(foundVets);
+            } else {
+                setError("Nenhum veterinário encontrado no raio de 10km. Tente novamente mais tarde ou aumente a área de busca.");
+            }
+        } catch (err) {
+            setError("Falha ao buscar veterinários. Verifique sua conexão com a internet.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -69,43 +108,45 @@ export function Emergency() {
                 {error && (
                      <Alert variant="default" className="bg-yellow-50 border-yellow-200">
                         <AlertTriangle className="h-4 w-4 text-yellow-700" />
-                        <AlertTitle className="font-headline text-yellow-800">Funcionalidade Incompleta</AlertTitle>
+                        <AlertTitle className="font-headline text-yellow-800">Aviso</AlertTitle>
                         <AlertDescription className="font-body text-yellow-700">
                            {error}
                         </AlertDescription>
                     </Alert>
                 )}
 
-                <div className="space-y-4">
-                    {vets.map((vet, index) => (
-                        <Card key={index} className="bg-background/50">
-                            <CardHeader>
-                                <CardTitle className="font-headline text-lg flex justify-between items-center">
-                                    {vet.name}
-                                    <span className="text-sm font-body font-normal text-muted-foreground">{vet.distance.toFixed(1)} km</span>
-                                </CardTitle>
-                                <CardDescription className="font-body">{vet.address}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-col sm:flex-row gap-2">
-                                <Button asChild variant="outline" className="w-full">
-                                    <a href={`tel:${vet.phone}`}>
-                                        <Phone className="mr-2" />
-                                        {vet.phone}
-                                    </a>
-                                </Button>
-                                <Button asChild className="w-full">
-                                    <a href={vet.url} target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink className="mr-2" />
-                                        Ver no mapa
-                                    </a>
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                {vets.length > 0 && (
+                    <div className="space-y-4">
+                         <h3 className="font-headline text-lg font-semibold text-center">Veterinários encontrados:</h3>
+                        {vets.map((vet) => (
+                            <Card key={vet.id} className="bg-background/50">
+                                <CardHeader>
+                                    <CardTitle className="font-headline text-lg flex justify-between items-center">
+                                        {vet.name}
+                                    </CardTitle>
+                                    <CardDescription className="font-body">{vet.address}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex flex-col sm:flex-row gap-2">
+                                     {vet.phone && (
+                                        <Button asChild variant="outline" className="w-full">
+                                            <a href={`tel:${vet.phone}`}>
+                                                <Phone className="mr-2" />
+                                                {vet.phone}
+                                            </a>
+                                        </Button>
+                                    )}
+                                    <Button asChild className="w-full">
+                                        <a href={vet.url} target="_blank" rel="noopener noreferrer">
+                                            <ExternalLink className="mr-2" />
+                                            Ver no mapa
+                                        </a>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
 }
-
-    
