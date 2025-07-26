@@ -27,8 +27,6 @@ const PetNutritionCalculator = dynamic(() => import('@/components/pet-nutrition-
 const Chatbot = dynamic(() => import('@/components/chatbot').then(mod => mod.Chatbot), { ssr: false });
 const PetProfile = dynamic(() => import('@/components/pet-profile').then(mod => mod.PetProfile), { ssr: false });
 const WeightTracker = dynamic(() => import('@/components/weight-tracker').then(mod => mod.WeightTracker), { ssr: false });
-const Emergency = dynamic(() => import('@/components/emergency').then(mod => mod.Emergency), { ssr: false });
-
 
 import { Dog, MessageSquare, Heart, Weight } from 'lucide-react';
 
@@ -155,10 +153,6 @@ export default function Home() {
                             <Weight />
                             Peso
                         </DynamicTabsTrigger>
-                         <DynamicTabsTrigger value="emergency" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
-                            <Siren />
-                            Emergência
-                        </DynamicTabsTrigger>
                     </DynamicTabsList>
                     <ThemeToggle />
                 </div>
@@ -187,9 +181,6 @@ export default function Home() {
                         selectedPetId={selectedPetId}
                         setSelectedPetId={setSelectedPetId}
                     />
-                </DynamicTabsContent>
-                <DynamicTabsContent value="emergency" className="mt-6">
-                    <Emergency />
                 </DynamicTabsContent>
             </DynamicTabs>
         </main>
