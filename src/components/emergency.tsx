@@ -12,7 +12,6 @@ type Vet = {
     name: string;
     address: string;
     phone?: string;
-    distance: number; 
     url: string;
 }
 
@@ -27,7 +26,7 @@ export function Emergency() {
         setVets([]);
 
         if (!process.env.NEXT_PUBLIC_MAPBOX_API_KEY) {
-            setError("Chave de API da Mapbox não encontrada. Por favor, adicione a chave ao arquivo .env e reinicie o servidor.");
+            setError("Chave de API da Mapbox não encontrada. O desenvolvedor precisa configurar a chave no ambiente.");
             setIsLoading(false);
             return;
         }
@@ -54,7 +53,7 @@ export function Emergency() {
         const apiKey = process.env.NEXT_PUBLIC_MAPBOX_API_KEY;
         const query = 'veterinário,clínica veterinária';
         const radiusInMeters = 10000; // 10km
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?proximity=${longitude},${latitude}&limit=10&radius=${radiusInMeters}&access_token=${apiKey}`;
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?proximity=${longitude},${latitude}&limit=10&radius=${radiusInMeters}&access_token=${apiKey}`;
 
         try {
             const response = await fetch(url);
@@ -66,9 +65,6 @@ export function Emergency() {
                     name: feature.text,
                     address: feature.place_name.split(',').slice(1).join(',').trim(),
                     phone: feature.properties?.tel,
-                    // Mapbox distance is not directly provided in geocoding, so we generate a maps link instead.
-                    // For a real app, distance calculation would be a good addition.
-                    distance: 0, // Placeholder
                     url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(feature.place_name)}`
                 }));
                 setVets(foundVets);
@@ -130,14 +126,14 @@ export function Emergency() {
                                      {vet.phone && (
                                         <Button asChild variant="outline" className="w-full">
                                             <a href={`tel:${vet.phone}`}>
-                                                <Phone className="mr-2" />
-                                                {vet.phone}
+                                                <Phone className="mr-2 h-4 w-4" />
+                                                Ligar: {vet.phone}
                                             </a>
                                         </Button>
                                     )}
                                     <Button asChild className="w-full">
                                         <a href={vet.url} target="_blank" rel="noopener noreferrer">
-                                            <ExternalLink className="mr-2" />
+                                            <ExternalLink className="mr-2 h-4 w-4" />
                                             Ver no mapa
                                         </a>
                                     </Button>
