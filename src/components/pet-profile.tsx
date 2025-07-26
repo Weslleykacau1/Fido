@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -34,10 +34,43 @@ type WeightEntry = {
   date: string;
 };
 
+const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
+    if (!jsonString) return defaultValue;
+    try {
+        return JSON.parse(jsonString) ?? defaultValue;
+    } catch (error) {
+        console.error("Failed to parse JSON:", error);
+        return defaultValue;
+    }
+};
+
 export function PetProfile() {
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [ownerInfo, setOwnerInfo] = useState<OwnerFormValues | null>(null);
   const [petInfo, setPetInfo] = useState<PetFormValues | null>(null);
+
+  useEffect(() => {
+    const savedPetInfo = safelyParseJSON(localStorage.getItem('petInfo'), null);
+    if (savedPetInfo) setPetInfo(savedPetInfo);
+    
+    const savedOwnerInfo = safelyParseJSON(localStorage.getItem('ownerInfo'), null);
+    if (savedOwnerInfo) setOwnerInfo(savedOwnerInfo);
+
+    const savedWeightHistory = safelyParseJSON(localStorage.getItem('weightHistory'), []);
+    if (savedWeightHistory) setWeightHistory(savedWeightHistory);
+  }, []);
+
+  useEffect(() => {
+    if(petInfo) localStorage.setItem('petInfo', JSON.stringify(petInfo));
+  }, [petInfo]);
+
+  useEffect(() => {
+    if(ownerInfo) localStorage.setItem('ownerInfo', JSON.stringify(ownerInfo));
+  }, [ownerInfo]);
+
+  useEffect(() => {
+    if(weightHistory.length > 0) localStorage.setItem('weightHistory', JSON.stringify(weightHistory));
+  }, [weightHistory]);
 
   const weightForm = useForm<WeightFormValues>({
     resolver: zodResolver(weightFormSchema),
@@ -48,24 +81,19 @@ export function PetProfile() {
 
   const ownerForm = useForm<OwnerFormValues>({
     resolver: zodResolver(ownerFormSchema),
-    defaultValues: {
-      ownerName: "",
-      ownerEmail: ""
-    }
+    values: ownerInfo ?? { ownerName: "", ownerEmail: "" }
   });
 
   const petForm = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
-    defaultValues: {
-      petName: "",
-    }
+    values: petInfo ?? { petName: "" }
   });
 
 
   function onWeightSubmit(values: WeightFormValues) {
     const newEntry: WeightEntry = {
       weight: values.weight,
-      date: new Date().toLocaleDateString('pt-BR'),
+      date: new Date().toLocaleDate('pt-BR'),
     };
     setWeightHistory(prev => [newEntry, ...prev]);
     weightForm.reset();
@@ -73,14 +101,10 @@ export function PetProfile() {
 
   function onOwnerSubmit(values: OwnerFormValues) {
     setOwnerInfo(values);
-    // In a real app, you would save this to a database.
-    // For now, we just show a success state or message.
-    ownerForm.reset(values); // Keep the form populated with the saved data
   }
   
   function onPetSubmit(values: PetFormValues) {
     setPetInfo(values);
-    petForm.reset(values);
   }
 
 
@@ -118,7 +142,7 @@ export function PetProfile() {
                         )}
                     />
                     <Button type="submit" className="w-full font-headline font-bold">
-                        salve na memoria do aplicativo
+                        Salvar Nome do Pet
                     </Button>
                     </form>
                 </Form>
