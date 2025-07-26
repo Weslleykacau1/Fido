@@ -9,8 +9,26 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LineChart, User, Weight, History, Mail, Heart } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LineChart, User, Weight, History, Mail, Heart, Trash2, PlusCircle } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+
+const petSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
+  ownerName: z.string().optional(),
+  ownerEmail: z.string().email("Por favor, insira um e-mail válido.").optional().or(z.literal('')),
+  weightHistory: z.array(z.object({
+    weight: z.number(),
+    date: z.string(),
+  })).optional(),
+});
+type Pet = z.infer<typeof petSchema>;
+
+const addPetFormSchema = z.object({
+    petName: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
+});
+type AddPetFormValues = z.infer<typeof addPetFormSchema>;
 
 const weightFormSchema = z.object({
   weight: z.coerce.number().positive("O peso deve ser um número positivo.").max(150, "O peso parece muito alto para um cão."),
@@ -19,20 +37,9 @@ type WeightFormValues = z.infer<typeof weightFormSchema>;
 
 const ownerFormSchema = z.object({
   ownerName: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
-  ownerEmail: z.string().email("Por favor, insira um e-mail válido."),
+  ownerEmail: z.string().email("Por favor, insira um e-mail válido.").or(z.literal('')),
 });
 type OwnerFormValues = z.infer<typeof ownerFormSchema>;
-
-const petFormSchema = z.object({
-  petName: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
-});
-type PetFormValues = z.infer<typeof petFormSchema>;
-
-
-type WeightEntry = {
-  weight: number;
-  date: string;
-};
 
 const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
     if (!jsonString) return defaultValue;
@@ -45,68 +52,94 @@ const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
 };
 
 export function PetProfile() {
-  const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
-  const [ownerInfo, setOwnerInfo] = useState<OwnerFormValues | null>(null);
-  const [petInfo, setPetInfo] = useState<PetFormValues | null>(null);
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedPetInfo = safelyParseJSON(localStorage.getItem('petInfo'), null);
-    if (savedPetInfo) setPetInfo(savedPetInfo);
-    
-    const savedOwnerInfo = safelyParseJSON(localStorage.getItem('ownerInfo'), null);
-    if (savedOwnerInfo) setOwnerInfo(savedOwnerInfo);
-
-    const savedWeightHistory = safelyParseJSON(localStorage.getItem('weightHistory'), []);
-    if (savedWeightHistory) setWeightHistory(savedWeightHistory);
+    const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
+    if (savedPets.length > 0) {
+      setPets(savedPets);
+      setSelectedPetId(savedPets[0].id);
+    }
   }, []);
 
   useEffect(() => {
-    if(petInfo) localStorage.setItem('petInfo', JSON.stringify(petInfo));
-  }, [petInfo]);
+    if (pets.length > 0) {
+      localStorage.setItem('pets', JSON.stringify(pets));
+    } else {
+      localStorage.removeItem('pets');
+    }
+  }, [pets]);
 
-  useEffect(() => {
-    if(ownerInfo) localStorage.setItem('ownerInfo', JSON.stringify(ownerInfo));
-  }, [ownerInfo]);
-
-  useEffect(() => {
-    if(weightHistory.length > 0) localStorage.setItem('weightHistory', JSON.stringify(weightHistory));
-  }, [weightHistory]);
+  const addPetForm = useForm<AddPetFormValues>({
+    resolver: zodResolver(addPetFormSchema),
+    defaultValues: { petName: "" },
+  });
 
   const weightForm = useForm<WeightFormValues>({
     resolver: zodResolver(weightFormSchema),
-    defaultValues: {
-      weight: undefined,
-    },
+    defaultValues: { weight: undefined },
   });
 
   const ownerForm = useForm<OwnerFormValues>({
     resolver: zodResolver(ownerFormSchema),
-    values: ownerInfo ?? { ownerName: "", ownerEmail: "" }
   });
+  
+  const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
 
-  const petForm = useForm<PetFormValues>({
-    resolver: zodResolver(petFormSchema),
-    values: petInfo ?? { petName: "" }
-  });
+  useEffect(() => {
+    if (selectedPet) {
+      ownerForm.reset({
+        ownerName: selectedPet.ownerName ?? "",
+        ownerEmail: selectedPet.ownerEmail ?? "",
+      });
+    } else {
+      ownerForm.reset({ ownerName: "", ownerEmail: "" });
+    }
+  }, [selectedPet, ownerForm]);
 
+  function onAddPetSubmit(values: AddPetFormValues) {
+    const newPet: Pet = {
+      id: new Date().toISOString(),
+      name: values.petName,
+      weightHistory: [],
+    };
+    const updatedPets = [...pets, newPet];
+    setPets(updatedPets);
+    setSelectedPetId(newPet.id);
+    addPetForm.reset();
+  }
 
   function onWeightSubmit(values: WeightFormValues) {
-    const newEntry: WeightEntry = {
+    if (!selectedPetId) return;
+    const newEntry = {
       weight: values.weight,
-      date: new Date().toLocaleDate('pt-BR'),
+      date: new Date().toLocaleDateString('pt-BR'),
     };
-    setWeightHistory(prev => [newEntry, ...prev]);
+    setPets(prev => prev.map(p =>
+      p.id === selectedPetId ? { ...p, weightHistory: [newEntry, ...(p.weightHistory ?? [])] } : p
+    ));
     weightForm.reset();
   }
 
   function onOwnerSubmit(values: OwnerFormValues) {
-    setOwnerInfo(values);
+    if (!selectedPetId) return;
+    setPets(prev => prev.map(p =>
+      p.id === selectedPetId ? { ...p, ownerName: values.ownerName, ownerEmail: values.ownerEmail } : p
+    ));
   }
   
-  function onPetSubmit(values: PetFormValues) {
-    setPetInfo(values);
+  function deletePet(petId: string) {
+    const updatedPets = pets.filter(p => p.id !== petId);
+    setPets(updatedPets);
+    if (selectedPetId === petId) {
+      setSelectedPetId(updatedPets.length > 0 ? updatedPets[0].id : null);
+    }
   }
-
+  
+  const handlePetSelection = (petId: string) => {
+      setSelectedPetId(petId);
+  }
 
   return (
     <Card className="w-full max-w-md bg-card/80 backdrop-blur-lg shadow-2xl shadow-primary/10 rounded-2xl border-primary/20">
@@ -114,8 +147,8 @@ export function PetProfile() {
         <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
           <User className="h-8 w-8 text-primary" />
         </div>
-        <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Perfil do Pet</CardTitle>
-        <CardDescription className="font-body text-lg pt-1 text-muted-foreground">Acompanhe os dados do seu amigo</CardDescription>
+        <CardTitle className="font-headline text-3xl font-bold tracking-tight text-foreground">Perfis dos Pets</CardTitle>
+        <CardDescription className="font-body text-lg pt-1 text-muted-foreground">Acompanhe os dados dos seus amigos</CardDescription>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[500px] w-full pr-4">
@@ -123,135 +156,177 @@ export function PetProfile() {
 
             <Card className="bg-background/50">
                 <CardHeader>
-                <CardTitle className="font-headline text-xl flex items-center gap-2"><Heart className="h-5 w-5" /> Dados do Pet</CardTitle>
+                    <CardTitle className="font-headline text-xl flex items-center gap-2"><Heart className="h-5 w-5" /> Adicionar Novo Pet</CardTitle>
                 </CardHeader>
                 <CardContent>
-                <Form {...petForm}>
-                    <form onSubmit={petForm.handleSubmit(onPetSubmit)} className="space-y-4">
-                    <FormField
-                        control={petForm.control}
-                        name="petName"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="font-headline text-md font-semibold">Nome do Pet</FormLabel>
-                            <FormControl>
-                            <Input placeholder="Bob" {...field} className="font-body" />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <Button type="submit" className="w-full font-headline font-bold">
-                        Salvar Nome do Pet
-                    </Button>
-                    </form>
-                </Form>
+                    <Form {...addPetForm}>
+                        <form onSubmit={addPetForm.handleSubmit(onAddPetSubmit)} className="space-y-4">
+                            <FormField
+                                control={addPetForm.control}
+                                name="petName"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-headline text-md font-semibold">Nome do Pet</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="Bob" {...field} className="font-body" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <Button type="submit" className="w-full font-headline font-bold">
+                                <PlusCircle className="mr-2 h-5 w-5"/>
+                                Adicionar à Lista de Pets
+                            </Button>
+                        </form>
+                    </Form>
                 </CardContent>
             </Card>
+            
+            {pets.length > 0 && (
+                <Card className="bg-background/50">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-xl flex items-center gap-2"><User className="h-5 w-5" /> Selecione o Pet</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Select onValueChange={handlePetSelection} value={selectedPetId ?? undefined}>
+                            <SelectTrigger className="w-full font-body">
+                                <SelectValue placeholder="Selecione um pet..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <ScrollArea className="h-auto">
+                                {pets.map((pet) => (
+                                  <SelectItem key={pet.id} value={pet.id}>
+                                    <div className="flex items-center justify-between w-full">
+                                      <span>{pet.name}</span>
+                                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => {e.stopPropagation(); deletePet(pet.id)}}>
+                                        <Trash2 className="h-4 w-4 text-destructive"/>
+                                      </Button>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                                </ScrollArea>
+                            </SelectContent>
+                        </Select>
+                    </CardContent>
+                </Card>
+            )}
 
-            <Card className="bg-background/50">
-                <CardHeader>
-                <CardTitle className="font-headline text-xl flex items-center gap-2"><User className="h-5 w-5" /> Dados do Dono</CardTitle>
-                </CardHeader>
-                <CardContent>
-                <Form {...ownerForm}>
-                    <form onSubmit={ownerForm.handleSubmit(onOwnerSubmit)} className="space-y-4">
-                    <FormField
-                        control={ownerForm.control}
-                        name="ownerName"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="font-headline text-md font-semibold">Nome</FormLabel>
-                            <FormControl>
-                            <Input placeholder="Seu nome" {...field} className="font-body" />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={ownerForm.control}
-                        name="ownerEmail"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="font-headline text-md font-semibold flex items-center gap-2"><Mail className="h-4 w-4"/> E-mail</FormLabel>
-                            <FormControl>
-                            <Input type="email" placeholder="seu@email.com" {...field} className="font-body" />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <Button type="submit" className="w-full font-headline font-bold">
-                        Salvar Dados
-                    </Button>
-                    </form>
-                </Form>
-                </CardContent>
-            </Card>
+            {selectedPet && (
+             <AnimatePresence>
+                <motion.div
+                    key={selectedPetId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="space-y-6"
+                >
+                    <Card className="bg-background/50">
+                        <CardHeader>
+                        <CardTitle className="font-headline text-xl flex items-center gap-2"><User className="h-5 w-5" /> Dados do Dono de {selectedPet.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <Form {...ownerForm}>
+                            <form onSubmit={ownerForm.handleSubmit(onOwnerSubmit)} className="space-y-4">
+                            <FormField
+                                control={ownerForm.control}
+                                name="ownerName"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-headline text-md font-semibold">Nome</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="Seu nome" {...field} className="font-body" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={ownerForm.control}
+                                name="ownerEmail"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-headline text-md font-semibold flex items-center gap-2"><Mail className="h-4 w-4"/> E-mail</FormLabel>
+                                    <FormControl>
+                                    <Input type="email" placeholder="seu@email.com" {...field} className="font-body" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <Button type="submit" className="w-full font-headline font-bold">
+                                Salvar Dados do Dono
+                            </Button>
+                            </form>
+                        </Form>
+                        </CardContent>
+                    </Card>
 
-            <Card className="bg-background/50">
-                <CardHeader>
-                <CardTitle className="font-headline text-xl flex items-center gap-2"><Weight className="h-5 w-5" /> Atualizar Peso</CardTitle>
-                </CardHeader>
-                <CardContent>
-                <Form {...weightForm}>
-                    <form onSubmit={weightForm.handleSubmit(onWeightSubmit)} className="space-y-4">
-                    <FormField
-                        control={weightForm.control}
-                        name="weight"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="font-headline text-md font-semibold">Novo peso (kg)</FormLabel>
-                            <FormControl>
-                            <Input type="number" step="0.1" placeholder="ex: 15.5" {...field} value={field.value ?? ''} className="font-body" />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <Button type="submit" className="w-full font-headline font-bold">
-                        Adicionar Registro de Peso
-                    </Button>
-                    </form>
-                </Form>
-                </CardContent>
-            </Card>
+                    <Card className="bg-background/50">
+                        <CardHeader>
+                        <CardTitle className="font-headline text-xl flex items-center gap-2"><Weight className="h-5 w-5" /> Atualizar Peso de {selectedPet.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <Form {...weightForm}>
+                            <form onSubmit={weightForm.handleSubmit(onWeightSubmit)} className="space-y-4">
+                            <FormField
+                                control={weightForm.control}
+                                name="weight"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-headline text-md font-semibold">Novo peso (kg)</FormLabel>
+                                    <FormControl>
+                                    <Input type="number" step="0.1" placeholder="ex: 15.5" {...field} value={field.value ?? ''} className="font-body" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <Button type="submit" className="w-full font-headline font-bold">
+                                Adicionar Registro de Peso
+                            </Button>
+                            </form>
+                        </Form>
+                        </CardContent>
+                    </Card>
 
-            <Card className="bg-background/50">
-                <CardHeader>
-                <CardTitle className="font-headline text-xl flex items-center gap-2"><History className="h-5 w-5" /> Histórico de Peso</CardTitle>
-                </CardHeader>
-                <CardContent>
-                <ScrollArea className="h-40 w-full pr-4">
-                    <AnimatePresence>
-                    {weightHistory.length > 0 ? (
-                        <ul className="space-y-2">
-                        {weightHistory.map((entry, index) => (
-                            <motion.li
-                            key={index}
-                            layout
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            transition={{ duration: 0.3 }}
-                            className="flex justify-between items-center p-2 rounded-md bg-muted/50"
-                            >
-                            <span className="font-body font-semibold">{entry.weight} kg</span>
-                            <span className="font-body text-sm text-muted-foreground">{entry.date}</span>
-                            </motion.li>
-                        ))}
-                        </ul>
-                    ) : (
-                        <div className="text-center text-muted-foreground font-body py-8">
-                        <LineChart className="mx-auto h-8 w-8 mb-2" />
-                        Nenhum registro de peso ainda.
-                        </div>
-                    )}
-                    </AnimatePresence>
-                </ScrollArea>
-                </CardContent>
-            </Card>
+                    <Card className="bg-background/50">
+                        <CardHeader>
+                        <CardTitle className="font-headline text-xl flex items-center gap-2"><History className="h-5 w-5" /> Histórico de Peso de {selectedPet.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <ScrollArea className="h-40 w-full pr-4">
+                            <AnimatePresence>
+                            {(selectedPet.weightHistory ?? []).length > 0 ? (
+                                <ul className="space-y-2">
+                                {(selectedPet.weightHistory ?? []).map((entry, index) => (
+                                    <motion.li
+                                    key={index}
+                                    layout
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, x: -10 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="flex justify-between items-center p-2 rounded-md bg-muted/50"
+                                    >
+                                    <span className="font-body font-semibold">{entry.weight} kg</span>
+                                    <span className="font-body text-sm text-muted-foreground">{entry.date}</span>
+                                    </motion.li>
+                                ))}
+                                </ul>
+                            ) : (
+                                <div className="text-center text-muted-foreground font-body py-8">
+                                <LineChart className="mx-auto h-8 w-8 mb-2" />
+                                Nenhum registro de peso ainda.
+                                </div>
+                            )}
+                            </AnimatePresence>
+                        </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+             </AnimatePresence>
+            )}
             </div>
         </ScrollArea>
       </CardContent>
