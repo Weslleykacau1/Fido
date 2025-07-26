@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Pet } from '@/components/pet-profile';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Sparkles, AlertTriangle } from 'lucide-react';
+import { Sparkles, AlertTriangle, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { LoadingScreen } from '@/components/loading-screen';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -27,6 +27,7 @@ const PetNutritionCalculator = dynamic(() => import('@/components/pet-nutrition-
 const Chatbot = dynamic(() => import('@/components/chatbot').then(mod => mod.Chatbot), { ssr: false });
 const PetProfile = dynamic(() => import('@/components/pet-profile').then(mod => mod.PetProfile), { ssr: false });
 const WeightTracker = dynamic(() => import('@/components/weight-tracker').then(mod => mod.WeightTracker), { ssr: false });
+const Emergency = dynamic(() => import('@/components/emergency').then(mod => mod.Emergency), { ssr: false });
 
 
 import { Dog, MessageSquare, Heart, Weight } from 'lucide-react';
@@ -112,7 +113,7 @@ export default function Home() {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="w-full max-w-md md:max-w-2xl mx-auto mb-4"
+                        className="w-full max-w-md md:max-w-4xl mx-auto mb-4"
                     >
                         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-3 text-center sm:text-left">
@@ -135,7 +136,7 @@ export default function Home() {
                 )}
             </AnimatePresence>
             
-            <DynamicTabs defaultValue="calculator" className="w-full max-w-md md:max-w-2xl mx-auto">
+            <DynamicTabs defaultValue="calculator" className="w-full max-w-md md:max-w-4xl mx-auto">
                 <div className="flex justify-center items-center gap-4 mb-4">
                     <DynamicTabsList className="h-auto md:h-12 rounded-xl p-1 flex-wrap md:flex-nowrap">
                         <DynamicTabsTrigger value="calculator" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
@@ -153,6 +154,10 @@ export default function Home() {
                          <DynamicTabsTrigger value="weight" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
                             <Weight />
                             Peso
+                        </DynamicTabsTrigger>
+                         <DynamicTabsTrigger value="emergency" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
+                            <Siren />
+                            Emergência
                         </DynamicTabsTrigger>
                     </DynamicTabsList>
                     <ThemeToggle />
@@ -183,7 +188,12 @@ export default function Home() {
                         setSelectedPetId={setSelectedPetId}
                     />
                 </DynamicTabsContent>
+                <DynamicTabsContent value="emergency" className="mt-6">
+                    <Emergency />
+                </DynamicTabsContent>
             </DynamicTabs>
         </main>
     );
 }
+
+    
