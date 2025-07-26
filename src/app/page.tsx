@@ -4,18 +4,18 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Pet } from '@/components/pet-profile';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sparkles, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { LoadingScreen } from '@/components/loading-screen';
 
 const DynamicTabs = dynamic(() => import('@/components/ui/tabs').then((mod) => {
     // Need to do this because Tabs, TabsContent, etc are all named exports
     return { default: (props: any) => <mod.Tabs {...props} /> };
 }), {
     ssr: false,
-    loading: () => <Skeleton className="h-[600px] w-full rounded-2xl" />
+    loading: () => <LoadingScreen />
 });
 
 const DynamicTabsContent = dynamic(() => import('@/components/ui/tabs').then(mod => mod.TabsContent), { ssr: false });
