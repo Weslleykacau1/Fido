@@ -10,9 +10,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog, ChevronsRight, Heart } from 'lucide-react';
+import { PawPrint, Loader2, Info, Utensils, Bone, Hash, Dog, ChevronsRight, Heart, Weight } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from './ui/scroll-area';
 import { Pet } from './pet-profile';
 
@@ -20,6 +21,7 @@ const formSchema = z.object({
     dogId: z.string().optional(),
     breed: z.string({ required_error: 'Por favor, selecione uma raça.' }).min(1, { message: "Por favor, selecione uma raça." }),
     ageInMonths: z.coerce.number({ invalid_type_error: "Por favor, insira uma idade válida." }).positive({ message: "A idade deve ser um número positivo." }).max(240, { message: "A idade parece muito alta." }),
+    calculationMode: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -111,21 +113,25 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
             dogId: "",
             breed: "",
             ageInMonths: undefined,
+            calculationMode: "breed",
         },
     });
 
     useEffect(() => {
         if (selectedPet) {
+            const hasWeightHistory = selectedPet.weightHistory && selectedPet.weightHistory.length > 0;
             form.reset({
                 dogId: selectedPet.id,
                 breed: selectedPet.breed || "",
                 ageInMonths: selectedPet.ageInMonths || undefined,
+                calculationMode: hasWeightHistory ? "registered" : "breed",
             });
         } else {
              form.reset({
                 dogId: "",
                 breed: "",
                 ageInMonths: undefined,
+                calculationMode: "breed",
             })
         }
     }, [selectedPet, form]);
@@ -136,12 +142,19 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
         setResult(null);
         setError(null);
         
-        const dogName = pets.find(p => p.id === values.dogId)?.name ?? "Seu cão";
+        const currentPet = pets.find(p => p.id === values.dogId);
+        const dogName = currentPet?.name ?? "Seu cão";
         setSubmittedData({...values, dogName});
+        
+        let weightInKg: number | undefined = undefined;
+        if (values.calculationMode === 'registered' && currentPet?.weightHistory && currentPet.weightHistory.length > 0) {
+            weightInKg = currentPet.weightHistory[0].weight;
+        }
 
         const response = await getFoodAmount({
             breed: values.breed,
             ageInMonths: values.ageInMonths,
+            weightInKg: weightInKg
         });
 
         if (response.success) {
@@ -160,15 +173,12 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
     };
     
     const lifeStageInfo = submittedData ? getLifeStage(submittedData.ageInMonths) : null;
+    const currentPet = pets.find(p => p.id === form.watch('dogId'));
+    const hasWeightHistory = currentPet?.weightHistory && currentPet.weightHistory.length > 0;
 
     const handlePetSelection = (dogId: string) => {
       if (dogId === 'new') {
         setSelectedPetId(null);
-        form.reset({
-          dogId: "",
-          breed: "",
-          ageInMonths: undefined,
-        });
       } else {
         setSelectedPetId(dogId);
       }
@@ -201,12 +211,12 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                                         </FormControl>
                                         <SelectContent>
                                         <ScrollArea className="h-auto font-body">
+                                            <SelectItem value="new">Calcular para um novo pet</SelectItem>
                                             {pets.map((pet) => (
                                             <SelectItem key={pet.id} value={pet.id}>
                                                 {pet.name}
                                             </SelectItem>
                                             ))}
-                                            {pets.length > 0 && <SelectItem value="new">Nenhum (Calcular para um novo pet)</SelectItem>}
                                             {pets.length === 0 && <SelectItem value="" disabled>Nenhum pet salvo. Adicione um no Perfil.</SelectItem>}
                                         </ScrollArea>
                                         </SelectContent>
@@ -221,7 +231,7 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Bone className="h-4 w-4" /> Raça do Cão</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!form.watch('dogId')}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value ?? ""}>
                                     <FormControl>
                                       <SelectTrigger className="font-body">
                                         <SelectValue placeholder="Selecione uma raça" />
@@ -248,13 +258,52 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                                 <FormItem>
                                     <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Hash className="h-4 w-4" /> Idade em meses</FormLabel>
                                     <FormControl>
-                                        <Input type="number" placeholder="ex: 5" {...field} value={field.value ?? ''} className="font-body" disabled={!form.watch('dogId')} />
+                                        <Input type="number" placeholder="ex: 5" {...field} value={field.value ?? ''} className="font-body" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" disabled={isLoading || !form.watch('dogId')} className="w-full font-headline font-bold text-lg py-6 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 transition-shadow duration-300">
+                        
+                        {hasWeightHistory && (
+                            <FormField
+                            control={form.control}
+                            name="calculationMode"
+                            render={({ field }) => (
+                                <FormItem className="space-y-3">
+                                <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Weight className="h-4 w-4" /> Base do Cálculo</FormLabel>
+                                <FormControl>
+                                    <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="flex flex-col space-y-1"
+                                    >
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                        <RadioGroupItem value="breed" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal font-body">
+                                        Usar peso médio da raça
+                                        </FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-3 space-y-0">
+                                        <FormControl>
+                                        <RadioGroupItem value="registered" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal font-body">
+                                            Usar último peso registrado ({currentPet?.weightHistory?.[0].weight} kg)
+                                        </FormLabel>
+                                    </FormItem>
+                                    </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        )}
+
+
+                        <Button type="submit" disabled={isLoading} className="w-full font-headline font-bold text-lg py-6 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/40 transition-shadow duration-300">
                             {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PawPrint className="mr-2 h-5 w-5" />}
                             Calcular
                         </Button>

@@ -1,9 +1,9 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow to calculate the recommended daily food amount for a dog based on its breed and age.
+ * @fileOverview This file defines a Genkit flow to calculate the recommended daily food amount for a dog based on its breed, age, and optionally its specific weight.
  *
- * - calculateFoodAmount - A function that takes dog breed and age as input and returns the calculated food amount in grams.
+ * - calculateFoodAmount - A function that takes dog breed, age and optional weight as input and returns the calculated food amount in grams.
  * - CalculateFoodAmountInput - The input type for the calculateFoodAmount function.
  * - CalculateFoodAmountOutput - The return type for the calculateFoodAmount function.
  */
@@ -14,6 +14,7 @@ import {z} from 'genkit';
 const CalculateFoodAmountInputSchema = z.object({
   breed: z.string().describe('A raça do cachorro (e.g., golden).'),
   ageInMonths: z.number().describe('A idade do cachorro em meses.'),
+  weightInKg: z.number().optional().describe('O peso exato do cachorro em quilogramas. Se fornecido, substitui o peso médio da raça.'),
 });
 export type CalculateFoodAmountInput = z.infer<typeof CalculateFoodAmountInputSchema>;
 
@@ -96,10 +97,17 @@ const calculateFoodAmountFlow = ai.defineFlow(
     outputSchema: CalculateFoodAmountOutputSchema,
   },
   async input => {
-    const {breed, ageInMonths} = input;
-    const breedWeight = buscarPesoPorRaca(breed);
+    const {breed, ageInMonths, weightInKg} = input;
+    
+    let dogWeight;
 
-    if (!breedWeight) {
+    if (weightInKg) {
+      dogWeight = weightInKg;
+    } else {
+      dogWeight = buscarPesoPorRaca(breed);
+    }
+
+    if (!dogWeight) {
       const racaInfo = racas.find(r => r.id === breed);
       throw new Error(`Raça "${racaInfo ? racaInfo.nome : breed}" não encontrada na base de dados.`);
     }
@@ -110,7 +118,7 @@ const calculateFoodAmountFlow = ai.defineFlow(
     else if (ageInMonths <= 12) gramsPerKg = 22;
     else gramsPerKg = 15;
 
-    const foodAmountInGrams = breedWeight * gramsPerKg;
+    const foodAmountInGrams = dogWeight * gramsPerKg;
 
     return {foodAmountInGrams};
   }
