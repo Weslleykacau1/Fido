@@ -118,7 +118,7 @@ export function PetProfile() {
                         )}
                     />
                     <Button type="submit" className="w-full font-headline font-bold">
-                        Salvar Nome do Pet
+                        salve na memoria do aplicativo
                     </Button>
                     </form>
                 </Form>
