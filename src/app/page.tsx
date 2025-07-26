@@ -154,7 +154,6 @@ export default function Home() {
                                 Peso
                             </DynamicTabsTrigger>
                         </DynamicTabsList>
-                        <ThemeToggle />
                     </div>
                     <DynamicTabsContent value="calculator" className="mt-6">
                         <PetNutritionCalculator 
@@ -184,7 +183,7 @@ export default function Home() {
                     </DynamicTabsContent>
                 </DynamicTabs>
             </main>
-             <footer className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-border p-4 flex justify-center z-10">
+             <footer className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-border p-4 flex justify-center items-center gap-4 z-10">
                 <Button 
                     onClick={() => setActiveTab("chatbot")}
                     className="font-headline text-lg rounded-full shadow-lg shadow-primary/30"
@@ -193,6 +192,7 @@ export default function Home() {
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Dúvidas? Fale com a IA
                 </Button>
+                <ThemeToggle />
             </footer>
         </div>
     );
