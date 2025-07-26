@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { LoadingScreen } from '@/components/loading-screen';
+import { ThemeToggle } from '@/components/theme-toggle';
+
 
 const DynamicTabs = dynamic(() => import('@/components/ui/tabs').then((mod) => {
     // Need to do this because Tabs, TabsContent, etc are all named exports
@@ -42,15 +44,12 @@ const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
 export default function Home() {
     const [pets, setPets] = useState<Pet[]>([]);
     const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
-    const [lang, setLang] = useState("");
 
     const [showTrialBanner, setShowTrialBanner] = useState(false);
     const [trialDaysLeft, setTrialDaysLeft] = useState(7);
     const [hasPurchased, setHasPurchased] = useState(false);
 
     useEffect(() => {
-        setLang(navigator.language);
-
         // Check for purchase success in URL
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('purchase') === 'success') {
@@ -105,7 +104,10 @@ export default function Home() {
     const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
 
     return (
-        <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background">
+        <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background relative">
+             <div className="absolute top-4 right-4">
+                <ThemeToggle />
+            </div>
             
             <AnimatePresence>
                 {showTrialBanner && !hasPurchased && (
