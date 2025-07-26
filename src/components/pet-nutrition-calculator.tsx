@@ -250,7 +250,7 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                                                 {pet.name}
                                             </SelectItem>
                                             ))}
-                                            {pets.length === 0 && <SelectItem value="" disabled>Nenhum pet salvo. Adicione um na aba Pets.</SelectItem>}
+                                            {pets.length === 0 && <div className="text-sm text-muted-foreground text-center py-2 px-2">Nenhum pet salvo. Adicione um na aba Pets.</div>}
                                         </ScrollArea>
                                         </SelectContent>
                                     </Select>
@@ -412,5 +412,3 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
         </Card>
     );
 }
-
-    
