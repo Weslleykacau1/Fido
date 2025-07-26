@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-  title: 'FidoFeed.ai',
-  description: 'Descubra em segundos a quantidade ideal de ração para o seu cão com base na raça e idade!',
+  title: 'FidoFeed.ai - Nutricionista Pessoal para Cães',
+  description: 'Calcule a ração ideal, tire dúvidas sobre nutrição com IA e acompanhe o peso do seu cão. Tudo em um só lugar!',
 };
 
 export default function RootLayout({
