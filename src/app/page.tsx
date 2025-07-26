@@ -23,23 +23,18 @@ export default function Home() {
 
   useEffect(() => {
     const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
+    setPets(savedPets);
     if (savedPets.length > 0) {
-      setPets(savedPets);
-      // Do not autoselect a pet
-      // setSelectedPetId(savedPets[0].id); 
+      setSelectedPetId(savedPets[0].id);
     }
   }, []);
 
   useEffect(() => {
-    if (pets.length > 0) {
+    if (pets.length > 0 || localStorage.getItem('pets')) {
       localStorage.setItem('pets', JSON.stringify(pets));
-    } else {
-      // If there are no pets, remove from local storage and reset selection
-      localStorage.removeItem('pets');
-      setSelectedPetId(null);
     }
   }, [pets]);
-  
+
   const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
 
   return (

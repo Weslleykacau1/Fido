@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LineChart, User, Weight, History, Mail, Heart, Trash2, PlusCircle } from 'lucide-react';
+import { LineChart, User, Weight, History, Heart, Trash2, PlusCircle } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const petSchema = z.object({
@@ -18,8 +18,6 @@ const petSchema = z.object({
   name: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
   breed: z.string().optional(),
   ageInMonths: z.number().optional(),
-  ownerName: z.string().optional(),
-  ownerEmail: z.string().email("Por favor, insira um e-mail válido.").optional().or(z.literal('')),
   weightHistory: z.array(z.object({
     weight: z.number(),
     date: z.string(),
@@ -44,12 +42,6 @@ const weightFormSchema = z.object({
 });
 type WeightFormValues = z.infer<typeof weightFormSchema>;
 
-const ownerFormSchema = z.object({
-  ownerName: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
-  ownerEmail: z.string().email("Por favor, insira um e-mail válido.").or(z.literal('')),
-});
-type OwnerFormValues = z.infer<typeof ownerFormSchema>;
-
 export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: PetProfileProps) {
 
   const addPetForm = useForm<AddPetFormValues>({
@@ -61,23 +53,8 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
     resolver: zodResolver(weightFormSchema),
     defaultValues: { weight: undefined },
   });
-
-  const ownerForm = useForm<OwnerFormValues>({
-    resolver: zodResolver(ownerFormSchema),
-  });
   
   const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
-
-  useEffect(() => {
-    if (selectedPet) {
-      ownerForm.reset({
-        ownerName: selectedPet.ownerName ?? "",
-        ownerEmail: selectedPet.ownerEmail ?? "",
-      });
-    } else {
-      ownerForm.reset({ ownerName: "", ownerEmail: "" });
-    }
-  }, [selectedPet, ownerForm]);
 
   function onAddPetSubmit(values: AddPetFormValues) {
     const newPet: Pet = {
@@ -101,13 +78,6 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
       p.id === selectedPetId ? { ...p, weightHistory: [newEntry, ...(p.weightHistory ?? [])] } : p
     ));
     weightForm.reset();
-  }
-
-  function onOwnerSubmit(values: OwnerFormValues) {
-    if (!selectedPetId) return;
-    setPets(prev => prev.map(p =>
-      p.id === selectedPetId ? { ...p, ownerName: values.ownerName, ownerEmail: values.ownerEmail } : p
-    ));
   }
   
   function deletePet(petId: string) {
@@ -202,47 +172,6 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                     transition={{ duration: 0.5 }}
                     className="space-y-6"
                 >
-                    <Card className="bg-background/50">
-                        <CardHeader>
-                        <CardTitle className="font-headline text-xl flex items-center gap-2"><User className="h-5 w-5" /> Dados do Dono de {selectedPet.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <Form {...ownerForm}>
-                            <form onSubmit={ownerForm.handleSubmit(onOwnerSubmit)} className="space-y-4">
-                            <FormField
-                                control={ownerForm.control}
-                                name="ownerName"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="font-headline text-md font-semibold">Nome</FormLabel>
-                                    <FormControl>
-                                    <Input placeholder="Seu nome" {...field} className="font-body" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={ownerForm.control}
-                                name="ownerEmail"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="font-headline text-md font-semibold flex items-center gap-2"><Mail className="h-4 w-4"/> E-mail</FormLabel>
-                                    <FormControl>
-                                    <Input type="email" placeholder="seu@email.com" {...field} className="font-body" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <Button type="submit" className="w-full font-headline font-bold">
-                                Salvar Dados do Dono
-                            </Button>
-                            </form>
-                        </Form>
-                        </CardContent>
-                    </Card>
-
                     <Card className="bg-background/50">
                         <CardHeader>
                         <CardTitle className="font-headline text-xl flex items-center gap-2"><Weight className="h-5 w-5" /> Atualizar Peso de {selectedPet.name}</CardTitle>
