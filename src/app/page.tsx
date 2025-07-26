@@ -73,7 +73,7 @@ export default function Home() {
             
             setTrialDaysLeft(daysLeft);
 
-            if (daysLeft > 0) {
+            if (daysLeft >= 0) { // Show banner even on the last day
                 setShowTrialBanner(true);
             }
         }
@@ -99,7 +99,7 @@ export default function Home() {
         <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background">
             
             <AnimatePresence>
-                {showTrialBanner && (
+                {showTrialBanner && !hasPurchased && (
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
