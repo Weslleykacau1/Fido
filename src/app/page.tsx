@@ -5,7 +5,9 @@ import { PetNutritionCalculator } from '@/components/pet-nutrition-calculator';
 import { Chatbot } from '@/components/chatbot';
 import { PetProfile, Pet } from '@/components/pet-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dog, MessageSquare, Heart } from 'lucide-react';
+import { Dog, MessageSquare, Heart, Sparkles, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
     if (!jsonString) return defaultValue;
@@ -21,12 +23,43 @@ export default function Home() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
 
+  // State for the trial banner
+  const [showTrialBanner, setShowTrialBanner] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(7);
+  const [hasPurchased, setHasPurchased] = useState(false);
+
+
   useEffect(() => {
+    // All localStorage logic is now safely in useEffect
     const savedPets = safelyParseJSON(localStorage.getItem('pets'), []);
     setPets(savedPets);
     if (savedPets.length > 0) {
       setSelectedPetId(savedPets[0].id);
     }
+    
+    // Trial logic
+    const purchased = safelyParseJSON(localStorage.getItem('hasPurchased'), false);
+    setHasPurchased(purchased);
+
+    if (!purchased) {
+        let trialStartDate = safelyParseJSON(localStorage.getItem('trialStartDate'), null);
+        if (!trialStartDate) {
+            trialStartDate = new Date().toISOString();
+            localStorage.setItem('trialStartDate', JSON.stringify(trialStartDate));
+        }
+
+        const startDate = new Date(trialStartDate);
+        const today = new Date();
+        const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysLeft = 7 - daysPassed;
+        
+        setTrialDaysLeft(daysLeft);
+
+        if (daysLeft > 0) {
+            setShowTrialBanner(true);
+        }
+    }
+
   }, []);
 
   useEffect(() => {
@@ -35,10 +68,44 @@ export default function Home() {
     }
   }, [pets]);
 
+  const handlePurchase = () => {
+    localStorage.setItem('hasPurchased', JSON.stringify(true));
+    setHasPurchased(true);
+    setShowTrialBanner(false);
+  }
+
   const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/10 via-background to-background">
+        
+        <AnimatePresence>
+            {showTrialBanner && (
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="w-full max-w-md mx-auto mb-4"
+                >
+                    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle className="h-6 w-6" />
+                            <div className="font-body">
+                                <p className="font-bold">
+                                    {trialDaysLeft > 0 ? `Você tem ${trialDaysLeft} dias de teste restantes.` : "Seu período de teste acabou."}
+                                </p>
+                                <p className="text-sm">Atualize para a versão Pro para acesso ilimitado.</p>
+                            </div>
+                        </div>
+                        <Button onClick={handlePurchase} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold w-full sm:w-auto">
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Comprar Agora
+                        </Button>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+      
       <Tabs defaultValue="calculator" className="w-full max-w-md mx-auto">
         <div className="flex justify-center">
           <TabsList className="h-12 rounded-xl p-1">
