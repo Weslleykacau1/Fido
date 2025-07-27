@@ -222,7 +222,7 @@ export default function Home() {
                 <Button
                     onClick={() => setActiveTab("emergency")}
                     size="icon"
-                    className="rounded-full w-16 h-16 bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-500/30"
+                    className="rounded-full w-16 h-16 shadow-lg"
                     aria-label="Emergência"
                 >
                     <Siren className="h-8 w-8" />
