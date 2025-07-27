@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { cn } from '@/lib/utils';
 
 
 const petSchema = z.object({
@@ -53,6 +54,7 @@ type AddPetFormValues = z.infer<typeof addPetFormSchema>;
 
 export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: PetProfileProps) {
 
+  const [showAddForm, setShowAddForm] = useState(false);
   const addPetForm = useForm<AddPetFormValues>({
     resolver: zodResolver(addPetFormSchema),
     defaultValues: { petName: "" },
@@ -70,6 +72,7 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
     setPets(updatedPets);
     setSelectedPetId(newPet.id);
     addPetForm.reset();
+    setShowAddForm(false);
   }
   
   function deletePet(petId: string) {
@@ -96,91 +99,130 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
           <PawPrint className="h-8 w-8 text-primary" />
         </div>
         <CardTitle className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-foreground">Perfis dos Pets</CardTitle>
-        <CardDescription className="font-body text-base md:text-lg pt-1 text-muted-foreground">Acompanhe os dados dos seus amigos</CardDescription>
+        <CardDescription className="font-body text-base md:text-lg pt-1 text-muted-foreground">Selecione, adicione e gerencie seus amigos</CardDescription>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[500px] w-full pr-4">
             <div className="space-y-6">
 
-            <Card className="bg-background/50">
-                <CardHeader>
-                    <CardTitle className="font-headline text-xl flex items-center gap-2"><Heart className="h-5 w-5" /> Adicionar Novo Pet</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Form {...addPetForm}>
-                        <form onSubmit={addPetForm.handleSubmit(onAddPetSubmit)} className="space-y-4">
-                            <FormField
-                                control={addPetForm.control}
-                                name="petName"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="font-headline text-md font-semibold">Nome do Pet</FormLabel>
-                                    <FormControl>
-                                    <Input placeholder="Bob" {...field} className="font-body" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <Button type="submit" className="w-full font-headline font-bold">
-                                <PlusCircle className="mr-2 h-5 w-5"/>
-                                Adicionar à Lista de Pets
-                            </Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
-            
-            {pets.length > 0 && (
-                <Card className="bg-background/50">
-                    <CardHeader>
-                        <CardTitle className="font-headline text-xl flex items-center gap-2"><User className="h-5 w-5" /> Selecione o Pet</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-col gap-4">
-                        <Select onValueChange={handlePetSelection} value={selectedPetId ?? undefined}>
-                            <SelectTrigger className="w-full font-body">
-                                <SelectValue placeholder="Selecione um pet..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <ScrollArea className="h-auto">
-                                {pets.map((pet) => (
-                                  <SelectItem key={pet.id} value={pet.id}>
-                                    <div className="flex items-center justify-between w-full">
-                                      <span>{pet.name}</span>
-                                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => {e.stopPropagation(); deletePet(pet.id)}}>
-                                        <Trash2 className="h-4 w-4 text-destructive"/>
-                                      </Button>
+            <AnimatePresence>
+            {showAddForm && (
+                <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                >
+                    <Card className="bg-background/50 mb-6">
+                        <CardHeader>
+                            <CardTitle className="font-headline text-xl flex items-center gap-2"><Heart className="h-5 w-5" /> Adicionar Novo Pet</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Form {...addPetForm}>
+                                <form onSubmit={addPetForm.handleSubmit(onAddPetSubmit)} className="space-y-4">
+                                    <FormField
+                                        control={addPetForm.control}
+                                        name="petName"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-headline text-md font-semibold">Nome do Pet</FormLabel>
+                                            <FormControl>
+                                            <Input placeholder="Bob" {...field} className="font-body" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    <div className="flex gap-2">
+                                        <Button type="submit" className="w-full font-headline font-bold">
+                                            <PlusCircle className="mr-2 h-5 w-5"/>
+                                            Salvar Pet
+                                        </Button>
+                                         <Button variant="outline" className="w-full" onClick={() => setShowAddForm(false)}>
+                                            Cancelar
+                                        </Button>
                                     </div>
-                                  </SelectItem>
-                                ))}
-                                </ScrollArea>
-                            </SelectContent>
-                        </Select>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="destructive" className="w-full font-headline font-bold">
-                                <Trash2 className="mr-2 h-5 w-5"/>
-                                Excluir Todos os Pets
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Essa ação não pode ser desfeita. Isso irá apagar permanentemente
-                                  todos os perfis de pets salvos no seu navegador.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={deleteAllPets}>Excluir Tudo</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
+                                </form>
+                            </Form>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            )}
+            </AnimatePresence>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {pets.map(pet => (
+                <Card 
+                  key={pet.id}
+                  onClick={() => handlePetSelection(pet.id)}
+                  className={cn(
+                    "cursor-pointer group relative transition-all duration-300 ease-in-out hover:shadow-primary/20 hover:border-primary/50",
+                    selectedPetId === pet.id ? "border-primary shadow-lg shadow-primary/30" : "border-border"
+                  )}
+                >
+                  <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 aspect-square">
+                    <PawPrint className={cn(
+                      "h-8 w-8 transition-colors",
+                      selectedPetId === pet.id ? "text-primary" : "text-muted-foreground group-hover:text-primary"
+                    )}/>
+                    <p className="font-headline text-lg font-semibold truncate w-full">{pet.name}</p>
+                  </CardContent>
+                  <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                           <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7 opacity-50 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                              <Trash2 className="h-4 w-4 text-destructive"/>
+                          </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir {pet.name}?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Essa ação não pode ser desfeita e irá apagar o perfil e histórico de peso de {pet.name}.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deletePet(pet.id)}>Excluir</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                  </AlertDialog>
+                </Card>
+              ))}
+               <Card
+                    onClick={() => setShowAddForm(true)}
+                    className="cursor-pointer group transition-all duration-300 ease-in-out hover:shadow-primary/20 hover:border-primary/50 border-dashed"
+                >
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 aspect-square">
+                        <PlusCircle className="h-8 w-8 text-muted-foreground transition-colors group-hover:text-primary" />
+                        <p className="font-headline text-lg font-semibold text-muted-foreground group-hover:text-primary">Adicionar Pet</p>
                     </CardContent>
                 </Card>
+            </div>
+            
+            {pets.length > 0 && (
+                <div className="pt-6">
+                    <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full font-headline font-bold">
+                        <Trash2 className="mr-2 h-5 w-5"/>
+                        Excluir Todos os Pets
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Essa ação não pode ser desfeita. Isso irá apagar permanentemente
+                            todos os perfis de pets salvos no seu navegador.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={deleteAllPets}>Excluir Tudo</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                    </AlertDialog>
+                </div>
             )}
             </div>
         </ScrollArea>
