@@ -190,7 +190,7 @@ export default function Home() {
                     size="lg"
                 >
                     <MessageSquare className="mr-2 h-5 w-5" />
-                    Dúvidas? Fale com a IA
+                    Dúvidas sobre seu Pet
                 </Button>
                 <ThemeToggle />
             </footer>
