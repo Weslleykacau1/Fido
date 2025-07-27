@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Siren, Loader2, AlertTriangle, ExternalLink, Phone, MapPin } from 'lucide-react';
+import { findVetsInCity } from '@/app/actions';
 
 const searchSchema = z.object({
     city: z.string().min(3, "Por favor, insira um nome de cidade válido."),
@@ -18,11 +19,9 @@ const searchSchema = z.object({
 type SearchFormValues = z.infer<typeof searchSchema>;
 
 type Vet = {
-    id: string;
     name: string;
     address: string;
     phone?: string;
-    url: string;
 }
 
 export function Emergency() {
@@ -41,47 +40,21 @@ export function Emergency() {
         setError(null);
         setVets([]);
 
-        if (!process.env.NEXT_PUBLIC_MAPBOX_API_KEY) {
-            setError("Chave de API da Mapbox não configurada.");
-            setIsLoading(false);
-            return;
-        }
-
         try {
-            // 1. Geocode the city name to get coordinates
-            const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(values.city)}.json?types=place&limit=1&access_token=${process.env.NEXT_PUBLIC_MAPBOX_API_KEY}`;
-            const geocodeResponse = await fetch(geocodeUrl);
-            const geocodeData = await geocodeResponse.json();
-
-            if (!geocodeData.features || geocodeData.features.length === 0) {
-                setError(`Não foi possível encontrar a cidade "${values.city}". Verifique o nome e tente novamente.`);
-                setIsLoading(false);
-                return;
-            }
-
-            const [longitude, latitude] = geocodeData.features[0].center;
-
-            // 2. Search for vets near the coordinates
-            const query = 'veterinário,clínica veterinária';
-            const vetsUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?proximity=${longitude},${latitude}&limit=10&access_token=${process.env.NEXT_PUBLIC_MAPBOX_API_KEY}`;
-            const vetsResponse = await fetch(vetsUrl);
-            const vetsData = await vetsResponse.json();
-
-            if (vetsData.features && vetsData.features.length > 0) {
-                const foundVets: Vet[] = vetsData.features.map((feature: any) => ({
-                    id: feature.id,
-                    name: feature.text,
-                    address: feature.place_name.split(',').slice(1).join(',').trim(),
-                    phone: feature.properties?.tel,
-                    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(feature.place_name)}`
-                }));
-                setVets(foundVets);
+            const response = await findVetsInCity({ city: values.city });
+            
+            if (response.success && response.data) {
+                if (response.data.vets.length > 0) {
+                    setVets(response.data.vets);
+                } else {
+                     setError(`Nenhuma clínica veterinária encontrada em "${values.city}". Tente uma cidade próxima ou verifique a grafia.`);
+                }
             } else {
-                setError("Nenhum veterinário encontrado próximo a esta cidade. Tente uma cidade maior ou verifique a grafia.");
+                 setError(response.error || "Ocorreu uma falha ao buscar. Tente novamente mais tarde.");
             }
 
         } catch (err) {
-            setError("Falha ao buscar. Verifique sua conexão ou tente novamente mais tarde.");
+            setError("Ocorreu uma falha ao buscar. Verifique sua conexão ou tente novamente mais tarde.");
         } finally {
             setIsLoading(false);
         }
@@ -122,7 +95,7 @@ export function Emergency() {
                         />
                         <Button type="submit" disabled={isLoading} className="w-full font-headline font-bold text-lg py-6 rounded-xl">
                             {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <MapPin className="mr-2 h-5 w-5" />}
-                            {isLoading ? "Buscando..." : "Buscar Clínicas"}
+                            {isLoading ? "Buscando com IA..." : "Buscar Clínicas"}
                         </Button>
                     </form>
                 </Form>
@@ -141,8 +114,8 @@ export function Emergency() {
                 {vets.length > 0 && (
                     <div className="space-y-4">
                          <h3 className="font-headline text-lg font-semibold text-center">Clínicas encontradas:</h3>
-                        {vets.map((vet) => (
-                            <Card key={vet.id} className="bg-background/50">
+                        {vets.map((vet, index) => (
+                            <Card key={index} className="bg-background/50">
                                 <CardHeader>
                                     <CardTitle className="font-headline text-lg flex justify-between items-center">
                                         {vet.name}
@@ -159,7 +132,7 @@ export function Emergency() {
                                         </Button>
                                     )}
                                     <Button asChild className="w-full">
-                                        <a href={vet.url} target="_blank" rel="noopener noreferrer">
+                                        <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(vet.name + ', ' + vet.address)}`} target="_blank" rel="noopener noreferrer">
                                             <ExternalLink className="mr-2 h-4 w-4" />
                                             Ver no mapa
                                         </a>

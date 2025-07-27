@@ -1,10 +1,12 @@
+
 'use server';
 
 import { calculateFoodAmount, CalculateFoodAmountInput } from '@/ai/flows/calculate-food-amount';
 import { chat } from '@/ai/flows/chatbot';
 import { generateFeedingPlan } from '@/ai/flows/generate-feeding-plan';
+import { findVets } from '@/ai/flows/find-vets';
 import { z } from 'zod';
-import { GenerateFeedingPlanInput } from './schemas';
+import { GenerateFeedingPlanInput, FindVetsInput, FindVetsOutput } from './schemas';
 
 
 const ChatInputSchema = z.object({
@@ -48,5 +50,15 @@ export async function getFeedingPlan(input: GenerateFeedingPlanInput) {
     } catch (error) {
         console.error(error);
         return { success: false, error: 'Desculpe, não consegui gerar o plano de alimentação. Tente novamente.' };
+    }
+}
+
+export async function findVetsInCity(input: FindVetsInput) {
+    try {
+        const result = await findVets(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: 'Desculpe, não consegui buscar as clínicas. A IA pode estar indisponível. Tente novamente.' };
     }
 }

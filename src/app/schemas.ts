@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const GenerateFeedingPlanInputSchema = z.object({
@@ -21,3 +22,20 @@ export const GenerateFeedingPlanOutputSchema = z.object({
   })
 });
 export type GenerateFeedingPlanOutput = z.infer<typeof GenerateFeedingPlanOutputSchema>;
+
+
+export const FindVetsInputSchema = z.object({
+  city: z.string().describe('O nome da cidade para buscar clínicas veterinárias.'),
+});
+export type FindVetsInput = z.infer<typeof FindVetsInputSchema>;
+
+const VetSchema = z.object({
+    name: z.string().describe('O nome da clínica veterinária.'),
+    address: z.string().describe('O endereço completo da clínica.'),
+    phone: z.string().optional().describe('O número de telefone da clínica.'),
+});
+
+export const FindVetsOutputSchema = z.object({
+  vets: z.array(VetSchema).describe('Uma lista de clínicas veterinárias encontradas.'),
+});
+export type FindVetsOutput = z.infer<typeof FindVetsOutputSchema>;
