@@ -79,7 +79,7 @@ export default function Home() {
             const startDate = new Date(trialStartDate);
             const today = new Date();
             const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-            const daysLeft = 7 - daysPassed;
+            const daysLeft = 2 - daysPassed;
             
             setTrialDaysLeft(daysLeft);
 
@@ -122,7 +122,7 @@ export default function Home() {
                                     <AlertTriangle className="h-6 w-6 shrink-0" />
                                     <div className="font-body">
                                         <p className="font-bold">
-                                            {trialDaysLeft > 0 ? `Você tem ${trialDaysLeft} dias de teste restantes.` : "Seu período de teste acabou."}
+                                            {trialDaysLeft > 0 ? `Você tem ${trialDaysLeft} dias de teste grátis.` : "Seu período de teste acabou."}
                                         </p>
                                         <p className="text-sm">Atualize para a versão Pro para acesso ilimitado.</p>
                                     </div>
