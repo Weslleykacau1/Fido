@@ -6,13 +6,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { getFoodAmount, getFeedingPlan } from '@/app/actions';
-import type { GenerateFeedingPlanOutput } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight, ListTodo, Clock, Wheat, Lightbulb } from 'lucide-react';
+import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight, ListTodo, Clock, Wheat, Lightbulb, Save } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -20,6 +19,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Pet } from './pet-profile';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from './ui/progress';
+import { GenerateFeedingPlanOutput } from '@/app/schemas';
 
 const formSchema = z.object({
     dogId: z.string().optional(),
@@ -101,10 +101,11 @@ const getLifeStage = (ageInMonths: number) => {
 interface PetNutritionCalculatorProps {
   selectedPet: Pet | null;
   pets: Pet[];
+  setPets: React.Dispatch<React.SetStateAction<Pet[]>>;
   setSelectedPetId: (id: string | null) => void;
 }
 
-export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: PetNutritionCalculatorProps) {
+export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelectedPetId }: PetNutritionCalculatorProps) {
     const [result, setResult] = useState<ResultState>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -240,6 +241,19 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
         }
         setIsGeneratingPlan(false);
     }
+
+    const handleSavePlan = () => {
+        if (!feedingPlan || !selectedPet) return;
+
+        setPets(prevPets => prevPets.map(p => 
+            p.id === selectedPet.id ? { ...p, feedingPlan } : p
+        ));
+
+        toast({
+            title: "Plano Salvo!",
+            description: `O plano de alimentação de ${selectedPet.name} foi salvo no perfil.`,
+        });
+    }
     
     const lifeStageInfo = submittedData ? getLifeStage(submittedData.ageInMonths) : null;
     const currentPet = pets.find(p => p.id === form.watch('dogId'));
@@ -248,8 +262,10 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
     const handlePetSelection = (dogId: string) => {
       if (dogId === 'new') {
         setSelectedPetId(null);
+        setFeedingPlan(null); // Clear plan when switching to a new pet calculation
       } else {
         setSelectedPetId(dogId);
+        setFeedingPlan(null); // Clear plan when switching pet
       }
     }
 
@@ -493,6 +509,12 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                                         <p className="font-body text-sm text-muted-foreground whitespace-pre-wrap">{feedingPlan.plan.recommendations}</p>
                                     </CardContent>
                                 </Card>
+                                {selectedPet && (
+                                    <Button onClick={handleSavePlan} className="w-full font-headline">
+                                        <Save className="mr-2 h-4 w-4" />
+                                        Salvar Plano no Perfil
+                                    </Button>
+                                )}
                             </motion.div>
                         )}
                          {planError && (
