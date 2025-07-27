@@ -238,92 +238,151 @@ export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelected
     }
 
     const handleExport = async () => {
-        if (!feedingPlan || !submittedData) return;
+    if (!feedingPlan || !submittedData) return;
 
-        const currentPet = pets.find(p => p.id === submittedData.dogId);
-        let weightInKg;
-        if (submittedData.calculationMode === 'registered' && currentPet?.weightHistory && currentPet.weightHistory.length > 0) {
-            weightInKg = currentPet.weightHistory[0].weight;
-        } else {
-            toast({ title: "Peso não encontrado", description: "Não foi possível encontrar o peso para exportar.", variant: "destructive" });
-            return;
-        }
+    const currentPet = pets.find(p => p.id === submittedData.dogId);
+    let weightInKg;
+     if (submittedData.calculationMode === 'registered' && currentPet?.weightHistory && currentPet.weightHistory.length > 0) {
+        weightInKg = currentPet.weightHistory[0].weight;
+    } else {
+        toast({ title: "Peso não encontrado", description: "Não foi possível encontrar o peso para exportar.", variant: "destructive" });
+        return;
+    }
 
-        const breedLabel = dogBreeds.find(b => b.value === submittedData.breed)?.label ?? submittedData.breed;
+    const breedLabel = dogBreeds.find(b => b.value === submittedData.breed)?.label ?? submittedData.breed;
 
-        const mealRows = feedingPlan.plan.meals.map(meal => `
+    const mealRows = feedingPlan.plan.meals.map(meal => `
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">${meal.mealName}</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${meal.time}</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">${meal.portionGrams}g</td>
+        </tr>
+    `).join('');
+
+    const recommendationItems = feedingPlan.plan.recommendations.map(rec => `
+        <li style="margin-bottom: 8px;">${rec}</li>
+    `).join('');
+
+    let historySection = '';
+    const weightHistory = currentPet?.weightHistory ?? [];
+
+    if (weightHistory.length > 0) {
+        const historyRows = weightHistory.map(entry => `
             <tr>
-                <td>${meal.mealName}</td>
-                <td>${meal.time}</td>
-                <td>${meal.portionGrams}g</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${entry.date}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${entry.weight} kg</td>
             </tr>
         `).join('');
 
-        const recommendationItems = feedingPlan.plan.recommendations.map(rec => `
-            <li>${rec}</li>
-        `).join('');
-
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html lang="pt-BR">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Plano de Alimentação - ${submittedData.dogName}</title>
-                <style>
-                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-                    h1, h2 { color: #A07A5F; }
-                    h1 { border-bottom: 2px solid #F5F0EC; padding-bottom: 10px; }
-                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-                    th { background-color: #F5F0EC; }
-                    ul { list-style-type: '🐾 '; padding-left: 20px; }
-                    .footer { text-align: center; margin-top: 20px; font-size: 0.9em; color: #777; }
-                </style>
-            </head>
-            <body>
-                <h1>Plano de Alimentação para ${submittedData.dogName}</h1>
-                
-                <h2>Informações do Pet</h2>
-                <ul>
-                    <li><strong>Nome:</strong> ${submittedData.dogName}</li>
-                    <li><strong>Raça:</strong> ${breedLabel}</li>
-                    <li><strong>Idade:</strong> ${submittedData.ageInMonths} meses</li>
-                    <li><strong>Peso Atual:</strong> ${weightInKg} kg</li>
-                </ul>
-
-                <h2>Refeições Diárias</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Refeição</th>
-                            <th>Horário Sugerido</th>
-                            <th>Porção</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${mealRows}
-                    </tbody>
-                </table>
-
-                <h2>Recomendações</h2>
-                <ul>
-                    ${recommendationItems}
-                </ul>
-
-                <div class="footer">
-                    <p>Gerado por FidoFeed.ai</p>
-                    <p><strong>Aviso Importante:</strong> Este é um plano de alimentação sugerido. Consulte sempre um veterinário para recomendações específicas para a saúde do seu cão.</p>
-                </div>
-            </body>
-            </html>
-        `;
+        const weights = weightHistory.map(e => e.weight).reverse();
+        const dates = weightHistory.map(e => e.date).reverse();
+        const maxWeight = Math.max(...weights);
         
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        URL.revokeObjectURL(url);
+        const chartBars = weights.map((weight, index) => {
+            const barHeight = (weight / maxWeight) * 100; // Height as a percentage
+            return `
+                <div class="chart-bar-item">
+                    <div class="chart-bar" style="height: ${barHeight}%;">
+                        <span class="bar-label">${weight}kg</span>
+                    </div>
+                    <div class="chart-label">${dates[index]}</div>
+                </div>
+            `;
+        }).join('');
+
+        historySection = `
+            <h2>Histórico de Peso</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th style="background-color: #F5F0EC; padding: 10px; border: 1px solid #ddd; text-align: left;">Data</th>
+                                <th style="background-color: #F5F0EC; padding: 10px; border: 1px solid #ddd; text-align: left;">Peso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${historyRows}
+                        </tbody>
+                    </table>
+                </div>
+                <div style="flex: 2; min-width: 300px;">
+                     <div class="chart-container">
+                        ${chartBars}
+                    </div>
+                </div>
+            </div>
+        `;
     }
+
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Plano de Alimentação - ${submittedData.dogName}</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+                h1, h2 { color: #A07A5F; border-bottom: 2px solid #F5F0EC; padding-bottom: 10px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                th { background-color: #F5F0EC; }
+                ul { list-style-type: '🐾 '; padding-left: 20px; }
+                .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #777; }
+                .chart-container { display: flex; align-items: flex-end; justify-content: space-around; height: 200px; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #fafafa; }
+                .chart-bar-item { display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; flex: 1; }
+                .chart-bar { width: 30px; background-color: #A07A5F; border-radius: 4px 4px 0 0; position: relative; display: flex; justify-content: center; align-items: flex-end; transition: height 0.3s ease; }
+                .bar-label { position: absolute; top: -20px; font-size: 12px; color: #333; font-weight: bold; }
+                .chart-label { font-size: 11px; margin-top: 5px; text-align: center; }
+            </style>
+        </head>
+        <body>
+            <h1>Plano de Alimentação para ${submittedData.dogName}</h1>
+            
+            <h2>Informações do Pet</h2>
+            <ul>
+                <li><strong>Nome:</strong> ${submittedData.dogName}</li>
+                <li><strong>Raça:</strong> ${breedLabel}</li>
+                <li><strong>Idade:</strong> ${submittedData.ageInMonths} meses</li>
+                <li><strong>Peso de Referência:</strong> ${weightInKg} kg</li>
+            </ul>
+
+            <h2>Refeições Diárias</h2>
+            <p>Quantidade diária total: <strong>${Math.round(result!.foodAmountInGrams)}g</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Refeição</th>
+                        <th>Horário Sugerido</th>
+                        <th>Porção</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${mealRows}
+                </tbody>
+            </table>
+
+            <h2>Recomendações da IA</h2>
+            <ul>
+                ${recommendationItems}
+            </ul>
+
+            ${historySection}
+
+            <div class="footer">
+                <p>Gerado por FidoFeed.ai</p>
+                <p><strong>Aviso Importante:</strong> Este é um plano de alimentação sugerido. Consulte sempre um veterinário para recomendações específicas para a saúde do seu cão.</p>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    URL.revokeObjectURL(url);
+}
     
     const lifeStageInfo = submittedData ? getLifeStage(submittedData.ageInMonths) : null;
     const currentPet = pets.find(p => p.id === form.watch('dogId'));
@@ -610,3 +669,4 @@ export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelected
         </Card>
     );
 }
+
