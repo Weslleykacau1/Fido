@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 export const metadata: Metadata = {
   title: 'FidoFeed.ai - Nutricionista Pessoal para Cães',
   description: 'Calcule a ração ideal, tire dúvidas sobre nutrição com IA e acompanhe o peso do seu cão. Tudo em um só lugar!',
+  manifest: '/manifest.webmanifest',
 };
 
 export default function RootLayout({
