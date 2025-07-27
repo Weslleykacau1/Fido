@@ -2,7 +2,9 @@
 
 import { calculateFoodAmount, CalculateFoodAmountInput } from '@/ai/flows/calculate-food-amount';
 import { chat } from '@/ai/flows/chatbot';
+import { generateFeedingPlan } from '@/ai/flows/generate-feeding-plan';
 import { z } from 'zod';
+import { GenerateFeedingPlanInput } from './schemas';
 
 
 const ChatInputSchema = z.object({
@@ -36,5 +38,15 @@ export async function getChatResponse(input: ChatInput): Promise<{ success: bool
     } catch (error) {
         console.error(error);
         return { success: false, error: 'Desculpe, não consegui processar sua pergunta. Tente novamente.' };
+    }
+}
+
+export async function getFeedingPlan(input: GenerateFeedingPlanInput) {
+    try {
+        const result = await generateFeedingPlan(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: 'Desculpe, não consegui gerar o plano de alimentação. Tente novamente.' };
     }
 }

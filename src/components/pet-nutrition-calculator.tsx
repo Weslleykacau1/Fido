@@ -5,19 +5,21 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getFoodAmount } from '@/app/actions';
+import { getFoodAmount, getFeedingPlan } from '@/app/actions';
+import type { GenerateFeedingPlanOutput } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight } from 'lucide-react';
+import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight, ListTodo, Clock, Wheat, Lightbulb } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from './ui/scroll-area';
 import { Pet } from './pet-profile';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from './ui/progress';
 
 const formSchema = z.object({
     dogId: z.string().optional(),
@@ -110,6 +112,12 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
     const [submittedData, setSubmittedData] = useState<FormValues & {dogName: string} | null>(null);
     const { toast } = useToast();
 
+    const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [feedingPlan, setFeedingPlan] = useState<GenerateFeedingPlanOutput | null>(null);
+    const [planError, setPlanError] = useState<string | null>(null);
+
+
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -144,6 +152,8 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
         setShowFooter(true);
         setResult(null);
         setError(null);
+        setFeedingPlan(null);
+        setPlanError(null);
         
         const currentPet = pets.find(p => p.id === values.dogId);
         const dogName = currentPet?.name ?? "Seu cão";
@@ -174,6 +184,62 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
             setShowFooter(false);
         }
     };
+
+    const handleGeneratePlan = async () => {
+        if (!submittedData || !result) return;
+        
+        setIsGeneratingPlan(true);
+        setFeedingPlan(null);
+        setPlanError(null);
+        setProgress(0);
+
+        const timer = setInterval(() => {
+            setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+        }, 500);
+
+        const currentPet = pets.find(p => p.id === submittedData.dogId);
+        let weightInKg;
+        if (submittedData.calculationMode === 'registered' && currentPet?.weightHistory && currentPet.weightHistory.length > 0) {
+            weightInKg = currentPet.weightHistory[0].weight;
+        } else {
+            // This is a fallback - we need a weight. The main calculation flow finds it, but we need it here too.
+            // A better implementation would pass the used weight from the first step. For now, we replicate logic.
+            const response = await getFoodAmount({ breed: submittedData.breed, ageInMonths: submittedData.ageInMonths });
+            if(response.success && response.data) {
+                // This is an indirect way to get the weight used. The amount is weight * factor.
+                // We don't have the factor here easily.
+                // The AI flow for plan generation *should* be able to work without a precise weight if it has the total grams.
+                // Let's call the AI and see. It is better to create a new flow to get the weight.
+                // For now, let's just show an error if we don't have an explicit weight.
+                 toast({
+                    title: "Peso não encontrado",
+                    description: "Para gerar um plano, use o último peso registrado do pet.",
+                    variant: "destructive",
+                });
+                setIsGeneratingPlan(false);
+                clearInterval(timer);
+                return;
+            }
+        }
+        
+        const response = await getFeedingPlan({
+            dogName: submittedData.dogName,
+            breed: submittedData.breed,
+            ageInMonths: submittedData.ageInMonths,
+            weightInKg: weightInKg!,
+            dailyFoodAmountGrams: result.foodAmountInGrams,
+        });
+        
+        clearInterval(timer);
+        setProgress(100);
+
+        if (response.success && response.data) {
+            setFeedingPlan(response.data);
+        } else {
+            setPlanError(response.error || "Ocorreu um erro desconhecido.");
+        }
+        setIsGeneratingPlan(false);
+    }
     
     const lifeStageInfo = submittedData ? getLifeStage(submittedData.ageInMonths) : null;
     const currentPet = pets.find(p => p.id === form.watch('dogId'));
@@ -341,7 +407,7 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                         )}
 
                         {result && submittedData && lifeStageInfo && (
-                            <div className="space-y-4">
+                             <div className="space-y-4">
                                 <div className="w-full text-center p-6 bg-primary/10 rounded-xl border border-primary/20 relative">
                                     <p className="font-body text-muted-foreground">Porção diária para {submittedData.dogName}:</p>
                                     <p className="font-headline text-5xl md:text-6xl font-bold text-primary my-2">
@@ -369,7 +435,74 @@ export function PetNutritionCalculator({ selectedPet, pets, setSelectedPetId }: 
                                         Esta é uma estimativa. A necessidade real pode variar com o nível de atividade e metabolismo do seu cão. Consulte sempre um veterinário.
                                     </AlertDescription>
                                 </Alert>
+
+                                <div className="pt-4">
+                                    <Button onClick={handleGeneratePlan} disabled={isGeneratingPlan || submittedData?.calculationMode !== 'registered'} className="w-full font-headline">
+                                        <ListTodo className="mr-2 h-4 w-4" />
+                                        {isGeneratingPlan ? "Gerando plano..." : "Gerar Plano de Alimentação"}
+                                    </Button>
+                                    {submittedData?.calculationMode !== 'registered' && 
+                                        <p className="text-xs text-muted-foreground text-center mt-2">Para gerar um plano, use o cálculo por peso registrado.</p>
+                                    }
+                                </div>
                             </div>
+                        )}
+
+                        {isGeneratingPlan && (
+                            <div className="space-y-4 text-center">
+                                 <p className="font-body text-muted-foreground">A IA está montando o plano ideal para {submittedData?.dogName}.</p>
+                                <Progress value={progress} className="w-full" />
+                            </div>
+                        )}
+                        
+                        {feedingPlan && (
+                            <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="space-y-4 mt-6">
+                                <Card className="bg-background">
+                                    <CardHeader>
+                                        <CardTitle className="font-headline text-xl flex items-center gap-2">
+                                            <ListTodo className="h-5 w-5 text-primary" />
+                                            Plano de Refeições Diário
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        {feedingPlan.plan.meals.map((meal, index) => (
+                                            <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                                <div className="flex items-center gap-3">
+                                                    <Clock className="h-5 w-5 text-primary/80" />
+                                                    <div>
+                                                        <p className="font-headline font-semibold">{meal.mealName}</p>
+                                                        <p className="text-sm text-muted-foreground">às {meal.time}</p>
+                                                    </div>
+                                                </div>
+                                                 <div className="text-right">
+                                                    <p className="font-headline font-semibold text-primary">{meal.portionGrams}g</p>
+                                                    <p className="text-sm text-muted-foreground">de ração</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+                                 <Card className="bg-background">
+                                    <CardHeader>
+                                        <CardTitle className="font-headline text-xl flex items-center gap-2">
+                                            <Lightbulb className="h-5 w-5 text-primary" />
+                                            Recomendações
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="font-body text-sm text-muted-foreground whitespace-pre-wrap">{feedingPlan.plan.recommendations}</p>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        )}
+                         {planError && (
+                            <Alert variant="destructive" className="mt-4">
+                                <Info className="h-4 w-4" />
+                                <AlertTitle className="font-headline">Erro ao Gerar Plano</AlertTitle>
+                                <AlertDescription className="font-body">
+                                    {planError}
+                                </AlertDescription>
+                            </Alert>
                         )}
                     </motion.div>
                 </CardFooter>
