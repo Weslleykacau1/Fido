@@ -220,12 +220,13 @@ export default function Home() {
             </footer>
              <div className="fixed bottom-24 right-4 z-20">
                 <Button
+                    variant="ghost"
                     onClick={() => setActiveTab("emergency")}
                     size="icon"
-                    className="rounded-full w-16 h-16 shadow-lg"
+                    className="rounded-full w-16 h-16 bg-black/20 dark:bg-black/50 backdrop-blur-md"
                     aria-label="Emergência"
                 >
-                    <Siren className="h-9 w-9" />
+                    <Siren className="h-9 w-9 text-red-500 [filter:drop-shadow(0_0_3px_#ef4444)]" />
                 </Button>
             </div>
         </div>
