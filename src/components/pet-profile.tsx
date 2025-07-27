@@ -160,7 +160,7 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
         <CardDescription className="font-body text-base md:text-lg pt-1 text-muted-foreground">Selecione, adicione e gerencie seus amigos</CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[500px] w-full pr-4">
+        <ScrollArea className="h-auto max-h-[500px] w-full pr-4">
             <div className="space-y-6">
 
             <AnimatePresence>
@@ -365,5 +365,3 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
     </Card>
   );
 }
-
-    
