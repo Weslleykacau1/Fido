@@ -20,18 +20,19 @@ const prompt = ai.definePrompt({
   name: 'findVetsPrompt',
   input: { schema: FindVetsInputSchema },
   output: { schema: FindVetsOutputSchema },
-  prompt: `Você é um assistente de busca local. Sua tarefa é encontrar clínicas veterinárias e hospitais veterinários 24 horas na cidade fornecida pelo usuário.
+  prompt: `Você é um assistente de busca local. Sua tarefa é encontrar clínicas veterinárias e hospitais veterinários 24 horas na localização fornecida pelo usuário.
 
-**Cidade para a busca:**
+**Localização para a busca (pode ser uma cidade ou cidade e bairro):**
 {{{city}}}
 
 **Instruções:**
-1.  **Priorize 24 horas:** Dê preferência a clínicas e hospitais que funcionam 24 horas.
-2.  **Pesquise na Web:** Use suas habilidades de pesquisa para encontrar informações atualizadas e precisas.
-3.  **Formato de Saída:** Retorne uma lista de até 10 clínicas. Para cada clínica, forneça o nome, endereço completo e, se possível, o número de telefone.
-4.  **Estrutura JSON:** Retorne os dados estritamente no formato JSON definido no esquema de saída. Se nenhuma clínica for encontrada, retorne um array 'vets' vazio.
+1.  **Seja Preciso:** Se o usuário fornecer um bairro, priorize os resultados nesse bairro e em suas proximidades.
+2.  **Priorize 24 horas:** Dê preferência a clínicas e hospitais que funcionam 24 horas.
+3.  **Pesquise na Web:** Use suas habilidades de pesquisa para encontrar informações atualizadas e precisas.
+4.  **Formato de Saída:** Retorne uma lista de até 10 clínicas. Para cada clínica, forneça o nome, endereço completo e, se possível, o número de telefone.
+5.  **Estrutura JSON:** Retorne os dados estritamente no formato JSON definido no esquema de saída. Se nenhuma clínica for encontrada, retorne um array 'vets' vazio.
 
-Execute a busca para a cidade informada.`,
+Execute a busca para a localização informada.`,
 });
 
 

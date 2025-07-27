@@ -85,9 +85,9 @@ export function Emergency() {
                             name="city"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="font-headline text-md font-semibold">Informe sua cidade</FormLabel>
+                                    <FormLabel className="font-headline text-md font-semibold">Informe a cidade ou (para mais precisão) a cidade e o bairro</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Ex: São Paulo" {...field} className="font-body" />
+                                        <Input placeholder="Ex: São Paulo, Pinheiros" {...field} className="font-body" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
