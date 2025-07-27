@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LineChart, User, Weight, History, Heart, Trash2, PlusCircle, PawPrint } from 'lucide-react';
+import { LineChart, User, Weight, History, Heart, Trash2, PlusCircle, PawPrint, Bone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertDialog,
@@ -48,8 +48,63 @@ interface PetProfileProps {
 
 const addPetFormSchema = z.object({
     petName: z.string().min(2, "O nome precisa ter ao menos 2 letras."),
+    breed: z.string({ required_error: 'Por favor, selecione uma raça.' }).min(1, { message: "Por favor, selecione uma raça." }),
 });
 type AddPetFormValues = z.infer<typeof addPetFormSchema>;
+
+const dogBreeds = [
+    { value: "caramelo", label: "Caramelo (Vira-lata)" },
+    { value: "labrador", label: "Labrador Retriever" },
+    { value: "poodle", label: "Poodle" },
+    { value: "shihtzu", label: "Shih Tzu" },
+    { value: "pinscher", label: "Pinscher" },
+    { value: "golden", label: "Golden Retriever" },
+    { value: "bulldog", label: "Bulldog Inglês" },
+    { value: "beagle", label: "Beagle" },
+    { value: "yorkshire", label: "Yorkshire Terrier" },
+    { value: "pastoralemao", label: "Pastor Alemão" },
+    { value: "rottweiler", label: "Rottweiler" },
+    { value: "boxer", label: "Boxer" },
+    { value: "dachshund", label: "Dachshund" },
+    { value: "siberianhusky", label: "Husky Siberiano" },
+    { value: "doberman", label: "Doberman" },
+    { value: "australianshepherd", label: "Pastor Australiano" },
+    { value: "schnauzer", label: "Schnauzer" },
+    { value: "chihuahua", label: "Chihuahua" },
+    { value: "pug", label: "Pug" },
+    { value: "pomeranian", label: "Spitz Alemão (Pomerânia)" },
+    { value: "bordercollie", label: "Border Collie" },
+    { value: "maltese", label: "Maltês" },
+    { value: "cockerspaniel", label: "Cocker Spaniel" },
+    { value: "frenchbulldog", label: "Buldogue Francês" },
+    { value: "greatdane", label: "Dogue Alemão" },
+    { value: "bernese", label: "Boiadeiro Bernês" },
+    { value: "akita", label: "Akita" },
+    { value: "bichonfrise", label: "Bichon Frisé" },
+    { value: "weimaraner", label: "Weimaraner" },
+    { value: "dalmatian", label: "Dálmata" },
+    { value: "bassetthound", label: "Basset Hound" },
+    { value: "shibainu", label: "Shiba Inu" },
+    { value: "stbernard", label: "São Bernardo" },
+    { value: "vizsla", label: "Vizsla" },
+    { value: "rhodesianridgeback", label: "Rhodesian Ridgeback" },
+    { value: "canecorso", label: "Cane Corso" },
+    { value: "bullterrier", label: "Bull Terrier" },
+    { value: "staffordshirebullterrier", label: "Staffordshire Bull Terrier" },
+    { value: "newfoundland", label: "Terra Nova" },
+    { value: "englishsetter", label: "Setter Inglês" },
+    { value: "irishwolfhound", label: "Lébrel Irlandês" },
+    { value: "papillon", label: "Papillon" },
+    { value: "samoyed", label: "Samoieda" },
+    { value: "whippet", label: "Whippet" },
+    { value: "pekingese", label: "Pequinês" },
+    { value: "bloodhound", label: "Bloodhound" },
+    { value: "chowchow", label: "Chow Chow" },
+    { value: "jackrussell", label: "Jack Russell Terrier" },
+    { value: "sharpei", label: "Shar Pei" },
+    { value: "westie", label: "West Highland White Terrier" },
+    { value: "cavalierkingcharles", label: "Cavalier King Charles Spaniel" }
+];
 
 
 export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: PetProfileProps) {
@@ -57,7 +112,7 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
   const [showAddForm, setShowAddForm] = useState(false);
   const addPetForm = useForm<AddPetFormValues>({
     resolver: zodResolver(addPetFormSchema),
-    defaultValues: { petName: "" },
+    defaultValues: { petName: "", breed: "" },
   });
   
   const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
@@ -66,6 +121,7 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
     const newPet: Pet = {
       id: new Date().toISOString(),
       name: values.petName,
+      breed: values.breed,
       weightHistory: [],
     };
     const updatedPets = [...pets, newPet];
@@ -133,6 +189,32 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                                         </FormItem>
                                         )}
                                     />
+                                    <FormField
+                                        control={addPetForm.control}
+                                        name="breed"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-headline text-md flex items-center gap-2 font-semibold"><Bone className="h-4 w-4" /> Raça do Cão</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value ?? ""}>
+                                                <FormControl>
+                                                <SelectTrigger className="font-body">
+                                                    <SelectValue placeholder="Selecione uma raça" />
+                                                </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                <ScrollArea className="h-72 font-body">
+                                                    {dogBreeds.map((breed) => (
+                                                    <SelectItem key={breed.value} value={breed.value}>
+                                                        {breed.label}
+                                                    </SelectItem>
+                                                    ))}
+                                                </ScrollArea>
+                                                </SelectContent>
+                                            </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                     <div className="flex gap-2">
                                         <Button type="submit" className="w-full font-headline font-bold">
                                             <PlusCircle className="mr-2 h-5 w-5"/>
@@ -166,6 +248,7 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                       selectedPetId === pet.id ? "text-primary" : "text-muted-foreground group-hover:text-primary"
                     )}/>
                     <p className="font-headline text-lg font-semibold truncate w-full">{pet.name}</p>
+                    <p className="font-body text-sm text-muted-foreground truncate w-full">{dogBreeds.find(b => b.value === pet.breed)?.label ?? 'Raça não definida'}</p>
                   </CardContent>
                   <AlertDialog>
                       <AlertDialogTrigger asChild>
