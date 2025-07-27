@@ -141,7 +141,7 @@ export default function Home() {
                                     </div>
                                 </div>
                                 <Button asChild className="bg-green-600 hover:bg-green-700 text-white font-bold w-full sm:w-auto flex-shrink-0">
-                                    <Link href="https://pay.cakto.com.br/b9ajqrx_496563" target="_blank" rel="noopener noreferrer">
+                                    <Link href="https://pay.kiwify.com.br/MxNJx7A" target="_blank" rel="noopener noreferrer">
                                         <Sparkles className="mr-2 h-4 w-4" />
                                         Comprar Agora
                                     </Link>
