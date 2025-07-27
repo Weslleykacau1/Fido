@@ -168,10 +168,6 @@ export default function Home() {
                                 <Weight />
                                 Peso
                             </DynamicTabsTrigger>
-                             <DynamicTabsTrigger value="emergency" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
-                                <Siren />
-                                Emerg
-                            </DynamicTabsTrigger>
                         </DynamicTabsList>
                     </div>
                     <DynamicTabsContent value="calculator" className="mt-6">
@@ -222,6 +218,16 @@ export default function Home() {
                 )}
                 <ThemeToggle />
             </footer>
+             <div className="fixed bottom-24 right-4 z-20">
+                <Button
+                    onClick={() => setActiveTab("emergency")}
+                    size="icon"
+                    className="rounded-full w-16 h-16 bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-500/30"
+                    aria-label="Emergência"
+                >
+                    <Siren className="h-8 w-8" />
+                </Button>
+            </div>
         </div>
     );
 }
