@@ -225,7 +225,7 @@ export default function Home() {
                     className="rounded-full w-16 h-16 shadow-lg"
                     aria-label="Emergência"
                 >
-                    <Siren className="h-8 w-8" />
+                    <Siren className="h-9 w-9" />
                 </Button>
             </div>
         </div>
