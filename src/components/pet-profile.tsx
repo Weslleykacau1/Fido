@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Trash2, PlusCircle, PawPrint, Bone, ListTodo, Clock, Lightbulb, CheckCircle } from 'lucide-react';
+import { Heart, Trash2, PlusCircle, PawPrint, Bone } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertDialog,
@@ -25,7 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { cn } from '@/lib/utils';
-import { GenerateFeedingPlanOutputSchema, GenerateFeedingPlanOutput } from '@/app/schemas';
+import { GenerateFeedingPlanOutputSchema } from '@/app/schemas';
 
 
 const petSchema = z.object({
@@ -251,7 +251,6 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                     )}/>
                     <p className="font-headline text-lg font-semibold truncate w-full">{pet.name}</p>
                     <p className="font-body text-sm text-muted-foreground truncate w-full">{dogBreeds.find(b => b.value === pet.breed)?.label ?? 'Raça não definida'}</p>
-                    {pet.feedingPlan && <ListTodo className="h-4 w-4 text-green-500 absolute top-2 left-2" title="Plano de alimentação salvo"/>}
                   </CardContent>
                   <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -284,55 +283,6 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                     </CardContent>
                 </Card>
             </div>
-
-            {selectedPet?.feedingPlan && (
-                <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} className="space-y-4 mt-6">
-                    <h3 className="font-headline text-xl font-bold text-center">Plano Salvo de {selectedPet.name}</h3>
-                    <Card className="bg-background">
-                        <CardHeader>
-                            <CardTitle className="font-headline text-xl flex items-center gap-2">
-                                <ListTodo className="h-5 w-5 text-primary" />
-                                Plano de Refeições Diário
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {selectedPet.feedingPlan.plan.meals.map((meal, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <Clock className="h-5 w-5 text-primary/80" />
-                                        <div>
-                                            <p className="font-headline font-semibold">{meal.mealName}</p>
-                                            <p className="text-sm text-muted-foreground">às {meal.time}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-headline font-semibold text-primary">{meal.portionGrams}g</p>
-                                        <p className="text-sm text-muted-foreground">de ração</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-background">
-                        <CardHeader>
-                            <CardTitle className="font-headline text-xl flex items-center gap-2">
-                                <Lightbulb className="h-5 w-5 text-primary" />
-                                Recomendações
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                           <ul className="space-y-2">
-                              {selectedPet.feedingPlan.plan.recommendations.map((rec, index) => (
-                                <li key={index} className="flex items-start gap-2">
-                                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span className="font-body text-sm text-muted-foreground">{rec}</span>
-                                </li>
-                              ))}
-                            </ul>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            )}
             
             {pets.length > 0 && (
                 <div className="pt-6">

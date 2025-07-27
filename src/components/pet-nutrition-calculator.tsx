@@ -11,7 +11,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight, ListTodo, Clock, Wheat, Lightbulb, Save, CheckCircle } from 'lucide-react';
+import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight, ListTodo, Clock, Wheat, Lightbulb, Printer, CheckCircle } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -205,22 +205,17 @@ export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelected
         } else {
             // This is a fallback - we need a weight. The main calculation flow finds it, but we need it here too.
             // A better implementation would pass the used weight from the first step. For now, we replicate logic.
-            const response = await getFoodAmount({ breed: submittedData.breed, ageInMonths: submittedData.ageInMonths });
-            if(response.success && response.data) {
-                // This is an indirect way to get the weight used. The amount is weight * factor.
-                // We don't have the factor here easily.
-                // The AI flow for plan generation *should* be able to work without a precise weight if it has the total grams.
-                // Let's call the AI and see. It is better to create a new flow to get the weight.
-                // For now, let's just show an error if we don't have an explicit weight.
-                 toast({
-                    title: "Peso não encontrado",
-                    description: "Para gerar um plano, use o último peso registrado do pet.",
-                    variant: "destructive",
-                });
-                setIsGeneratingPlan(false);
-                clearInterval(timer);
-                return;
-            }
+            // Let's call the AI and see. It is better to create a new flow to get the weight.
+            // For now, let's just show an error if we don't have an explicit weight.
+             toast({
+                title: "Peso não encontrado",
+                description: "Para gerar um plano, use o último peso registrado do pet.",
+                variant: "destructive",
+            });
+            setIsGeneratingPlan(false);
+            clearInterval(timer);
+            return;
+
         }
         
         const response = await getFeedingPlan({
@@ -242,17 +237,92 @@ export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelected
         setIsGeneratingPlan(false);
     }
 
-    const handleSavePlan = () => {
-        if (!feedingPlan || !selectedPet) return;
+    const handleExport = async () => {
+        if (!feedingPlan || !submittedData) return;
 
-        setPets(prevPets => prevPets.map(p => 
-            p.id === selectedPet.id ? { ...p, feedingPlan } : p
-        ));
+        const currentPet = pets.find(p => p.id === submittedData.dogId);
+        let weightInKg;
+        if (submittedData.calculationMode === 'registered' && currentPet?.weightHistory && currentPet.weightHistory.length > 0) {
+            weightInKg = currentPet.weightHistory[0].weight;
+        } else {
+            toast({ title: "Peso não encontrado", description: "Não foi possível encontrar o peso para exportar.", variant: "destructive" });
+            return;
+        }
 
-        toast({
-            title: "Plano Salvo!",
-            description: `O plano de alimentação de ${selectedPet.name} foi salvo no perfil.`,
-        });
+        const breedLabel = dogBreeds.find(b => b.value === submittedData.breed)?.label ?? submittedData.breed;
+
+        const mealRows = feedingPlan.plan.meals.map(meal => `
+            <tr>
+                <td>${meal.mealName}</td>
+                <td>${meal.time}</td>
+                <td>${meal.portionGrams}g</td>
+            </tr>
+        `).join('');
+
+        const recommendationItems = feedingPlan.plan.recommendations.map(rec => `
+            <li>${rec}</li>
+        `).join('');
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Plano de Alimentação - ${submittedData.dogName}</title>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+                    h1, h2 { color: #A07A5F; }
+                    h1 { border-bottom: 2px solid #F5F0EC; padding-bottom: 10px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                    th { background-color: #F5F0EC; }
+                    ul { list-style-type: '🐾 '; padding-left: 20px; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 0.9em; color: #777; }
+                </style>
+            </head>
+            <body>
+                <h1>Plano de Alimentação para ${submittedData.dogName}</h1>
+                
+                <h2>Informações do Pet</h2>
+                <ul>
+                    <li><strong>Nome:</strong> ${submittedData.dogName}</li>
+                    <li><strong>Raça:</strong> ${breedLabel}</li>
+                    <li><strong>Idade:</strong> ${submittedData.ageInMonths} meses</li>
+                    <li><strong>Peso Atual:</strong> ${weightInKg} kg</li>
+                </ul>
+
+                <h2>Refeições Diárias</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Refeição</th>
+                            <th>Horário Sugerido</th>
+                            <th>Porção</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${mealRows}
+                    </tbody>
+                </table>
+
+                <h2>Recomendações</h2>
+                <ul>
+                    ${recommendationItems}
+                </ul>
+
+                <div class="footer">
+                    <p>Gerado por FidoFeed.ai</p>
+                    <p><strong>Aviso Importante:</strong> Este é um plano de alimentação sugerido. Consulte sempre um veterinário para recomendações específicas para a saúde do seu cão.</p>
+                </div>
+            </body>
+            </html>
+        `;
+        
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        URL.revokeObjectURL(url);
     }
     
     const lifeStageInfo = submittedData ? getLifeStage(submittedData.ageInMonths) : null;
@@ -265,7 +335,9 @@ export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelected
         setFeedingPlan(null); // Clear plan when switching to a new pet calculation
       } else {
         setSelectedPetId(dogId);
-        setFeedingPlan(null); // Clear plan when switching pet
+        const pet = pets.find(p => p.id === dogId);
+        // Do not automatically set the feeding plan here, as the user might want to generate a new one.
+        setFeedingPlan(null); 
       }
     }
 
@@ -516,12 +588,10 @@ export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelected
                                         </ul>
                                     </CardContent>
                                 </Card>
-                                {selectedPet && (
-                                    <Button onClick={handleSavePlan} className="w-full font-headline">
-                                        <Save className="mr-2 h-4 w-4" />
-                                        Salvar Plano no Perfil
-                                    </Button>
-                                )}
+                                <Button onClick={handleExport} className="w-full font-headline">
+                                    <Printer className="mr-2 h-4 w-4" />
+                                    Exportar Plano
+                                </Button>
                             </motion.div>
                         )}
                          {planError && (
