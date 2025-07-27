@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Pet } from '@/components/pet-profile';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Sparkles, AlertTriangle, MessageSquare, Siren } from 'lucide-react';
+import { Sparkles, AlertTriangle, MessageSquare, Siren, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { LoadingScreen } from '@/components/loading-screen';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -49,9 +49,14 @@ export default function Home() {
     const [hasPurchased, setHasPurchased] = useState(false);
     
     const [activeTab, setActiveTab] = useState("calculator");
+    const [isShareSupported, setIsShareSupported] = useState(false);
 
 
     useEffect(() => {
+        if (navigator.share) {
+            setIsShareSupported(true);
+        }
+
         // Check for purchase success in URL
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('purchase') === 'success') {
@@ -97,10 +102,18 @@ export default function Home() {
         }
     }, [pets]);
 
-    const handlePurchase = () => {
-        localStorage.setItem('hasPurchased', JSON.stringify(true));
-        setHasPurchased(true);
-        setShowTrialBanner(false);
+    const handleShare = async () => {
+        const shareData = {
+            title: 'FidoFeed.ai',
+            text: 'Descubra a nutrição ideal para o seu cão com FidoFeed.ai! Calcule a ração, tire dúvidas e acompanhe a saúde do seu pet.',
+            url: window.location.href
+        };
+        try {
+            await navigator.share(shareData);
+        } catch (error) {
+            console.error('Erro ao compartilhar:', error);
+            // Optionally, implement a fallback like copying to clipboard
+        }
     };
 
     const selectedPet = pets.find(p => p.id === selectedPetId) ?? null;
@@ -192,6 +205,11 @@ export default function Home() {
                     <MessageSquare className="mr-2 h-5 w-5" />
                     Dúvidas sobre seu Pet
                 </Button>
+                 {isShareSupported && (
+                    <Button variant="outline" size="icon" onClick={handleShare} aria-label="Compartilhar aplicativo">
+                        <Share2 className="h-[1.2rem] w-[1.2rem]" />
+                    </Button>
+                )}
                 <ThemeToggle />
             </footer>
         </div>
