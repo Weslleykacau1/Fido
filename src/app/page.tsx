@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Pet } from '@/components/pet-profile';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Sparkles, AlertTriangle, MessageSquare, Siren, Share2 } from 'lucide-react';
+import { Sparkles, AlertTriangle, MessageSquare, Siren, Share2, Calculator } from 'lucide-react';
 import Link from 'next/link';
 import { LoadingScreen } from '@/components/loading-screen';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -30,7 +30,7 @@ const WeightTracker = dynamic(() => import('@/components/weight-tracker').then(m
 const Emergency = dynamic(() => import('@/components/emergency').then(mod => mod.Emergency), { ssr: false });
 
 
-import { Dog, Heart, Weight } from 'lucide-react';
+import { Heart, Weight } from 'lucide-react';
 
 const safelyParseJSON = (jsonString: string | null, defaultValue: any) => {
     if (!jsonString) return defaultValue;
@@ -157,8 +157,8 @@ export default function Home() {
                     <div className="flex justify-center items-center gap-4 mb-4">
                         <DynamicTabsList className="h-auto md:h-12 rounded-xl p-1 flex-wrap md:flex-nowrap">
                             <DynamicTabsTrigger value="calculator" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
-                                <Dog />
-                                Calcular
+                                <Calculator />
+                                Calc
                             </DynamicTabsTrigger>
                             <DynamicTabsTrigger value="profile" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
                                 <Heart />
