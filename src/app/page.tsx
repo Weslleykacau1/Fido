@@ -170,7 +170,7 @@ export default function Home() {
                             </DynamicTabsTrigger>
                              <DynamicTabsTrigger value="emergency" className="text-base font-semibold rounded-lg flex items-center gap-2 px-4 py-2 md:py-1.5">
                                 <Siren />
-                                Emergência
+                                Emerg
                             </DynamicTabsTrigger>
                         </DynamicTabsList>
                     </div>
