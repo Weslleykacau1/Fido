@@ -37,11 +37,15 @@ const prompt = ai.definePrompt({
     *   Adultos (acima de 12 meses): 2 refeições (manhã, noite).
 2.  **Defina Horários:** Sugira horários consistentes para cada refeição.
 3.  **Calcule as Porções:** Calcule a quantidade em gramas para cada refeição. A soma das porções deve ser igual à quantidade diária total.
-4.  **Gere Recomendações:** Forneça 2-3 dicas curtas e úteis. Inclua uma recomendação sobre a importância de água fresca e limpa sempre disponível. Mencione que o tipo de ração (filhote, adulto, sênior) deve ser apropriado para a idade.
-5.  **Formato de Saída:** Retorne os dados estritamente no formato JSON definido no esquema de saída.
+4.  **Gere Recomendações:** Forneça 3-4 dicas curtas e úteis como uma lista de strings.
+    *   **Dica Obrigatória sobre Pesagem:** Adicione uma recomendação específica sobre quando pesar o cão novamente.
+        *   Se o cão for filhote (até 12 meses de idade), recomende a **pesagem semanal**.
+        *   Se o cão for adulto (acima de 12 meses), recomende a **pesagem mensal**.
+    *   **Outras Dicas:** Inclua uma recomendação sobre a importância de água fresca e limpa sempre disponível. Mencione que o tipo de ração (filhote, adulto, sênior) deve ser apropriado para a idade.
+5.  **Formato de Saída:** Retorne os dados estritamente no formato JSON definido no esquema de saída, com as recomendações como um array de strings.
 
 **Exemplo de Raciocínio:**
-Se o cão tem 4 meses e a porção diária é 300g, eu devo dividir em 3 refeições de 100g cada. Sugiro horários como 08:00, 13:00 e 19:00. Depois, escrevo as recomendações.
+Se o cão tem 4 meses e a porção diária é 300g, eu devo dividir em 3 refeições de 100g cada. Sugiro horários como 08:00, 13:00 e 19:00. Depois, escrevo as recomendações em uma lista. Como ele é filhote, uma das recomendações será: "Acompanhe o crescimento pesando seu cão semanalmente."
 
 Execute a tarefa para o cão informado.`,
 });

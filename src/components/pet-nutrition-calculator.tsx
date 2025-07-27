@@ -11,7 +11,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight, ListTodo, Clock, Wheat, Lightbulb, Save } from 'lucide-react';
+import { PawPrint, Loader2, Info, Bone, Hash, Dog, ChevronsRight, Heart, Weight, ListTodo, Clock, Wheat, Lightbulb, Save, CheckCircle } from 'lucide-react';
 import { AnimatePresence, motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -506,7 +506,14 @@ export function PetNutritionCalculator({ selectedPet, pets, setPets, setSelected
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="font-body text-sm text-muted-foreground whitespace-pre-wrap">{feedingPlan.plan.recommendations}</p>
+                                        <ul className="space-y-2">
+                                          {feedingPlan.plan.recommendations.map((rec, index) => (
+                                            <li key={index} className="flex items-start gap-2">
+                                              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                              <span className="font-body text-sm text-muted-foreground">{rec}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
                                     </CardContent>
                                 </Card>
                                 {selectedPet && (

@@ -17,7 +17,7 @@ export const GenerateFeedingPlanOutputSchema = z.object({
         portionGrams: z.number().describe('A porção em gramas para esta refeição.'),
       })
     ).describe('Uma lista das refeições diárias.'),
-    recommendations: z.string().describe('Recomendações nutricionais gerais e dicas para a saúde do cão.'),
+    recommendations: z.array(z.string()).describe('Uma lista de recomendações nutricionais e dicas para a saúde do cão.'),
   })
 });
 export type GenerateFeedingPlanOutput = z.infer<typeof GenerateFeedingPlanOutputSchema>;

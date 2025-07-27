@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, Trash2, PlusCircle, PawPrint, Bone, ListTodo, Clock, Lightbulb } from 'lucide-react';
+import { Heart, Trash2, PlusCircle, PawPrint, Bone, ListTodo, Clock, Lightbulb, CheckCircle } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertDialog,
@@ -321,7 +321,14 @@ export function PetProfile({ pets, setPets, selectedPetId, setSelectedPetId }: P
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="font-body text-sm text-muted-foreground whitespace-pre-wrap">{selectedPet.feedingPlan.plan.recommendations}</p>
+                           <ul className="space-y-2">
+                              {selectedPet.feedingPlan.plan.recommendations.map((rec, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                  <span className="font-body text-sm text-muted-foreground">{rec}</span>
+                                </li>
+                              ))}
+                            </ul>
                         </CardContent>
                     </Card>
                 </motion.div>
