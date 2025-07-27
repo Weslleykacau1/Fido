@@ -2,10 +2,20 @@
 "use client";
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Siren, MapPin, Loader2, AlertTriangle, ExternalLink, Phone } from 'lucide-react';
+import { Siren, Loader2, AlertTriangle, ExternalLink, Phone, MapPin } from 'lucide-react';
+
+const searchSchema = z.object({
+    city: z.string().min(3, "Por favor, insira um nome de cidade válido."),
+});
+type SearchFormValues = z.infer<typeof searchSchema>;
 
 type Vet = {
     id: string;
@@ -19,48 +29,46 @@ export function Emergency() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [vets, setVets] = useState<Vet[]>([]);
+    
+    const form = useForm<SearchFormValues>({
+        resolver: zodResolver(searchSchema),
+        defaultValues: { city: "" },
+    });
 
-    const handleSearch = () => {
+
+    async function onSubmit(values: SearchFormValues) {
         setIsLoading(true);
         setError(null);
         setVets([]);
 
         if (!process.env.NEXT_PUBLIC_MAPBOX_API_KEY) {
-            setError("Chave de API da Mapbox não encontrada. O desenvolvedor precisa configurar a chave no ambiente.");
+            setError("Chave de API da Mapbox não configurada.");
             setIsLoading(false);
             return;
         }
-
-        if (!navigator.geolocation) {
-            setError("Geolocalização não é suportada por este navegador.");
-            setIsLoading(false);
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                fetchVets(longitude, latitude);
-            },
-            (err) => {
-                setError(`Erro ao obter localização: ${err.message}. Verifique as permissões de localização do seu navegador.`);
-                setIsLoading(false);
-            }
-        );
-    };
-
-    const fetchVets = async (longitude: number, latitude: number) => {
-        const apiKey = process.env.NEXT_PUBLIC_MAPBOX_API_KEY;
-        const query = 'veterinário,clínica veterinária';
-        const radiusInMeters = 10000; // 10km
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?proximity=${longitude},${latitude}&limit=10&radius=${radiusInMeters}&access_token=${apiKey}`;
 
         try {
-            const response = await fetch(url);
-            const data = await response.json();
+            // 1. Geocode the city name to get coordinates
+            const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(values.city)}.json?types=place&limit=1&access_token=${process.env.NEXT_PUBLIC_MAPBOX_API_KEY}`;
+            const geocodeResponse = await fetch(geocodeUrl);
+            const geocodeData = await geocodeResponse.json();
 
-            if (data.features && data.features.length > 0) {
-                const foundVets: Vet[] = data.features.map((feature: any) => ({
+            if (!geocodeData.features || geocodeData.features.length === 0) {
+                setError(`Não foi possível encontrar a cidade "${values.city}". Verifique o nome e tente novamente.`);
+                setIsLoading(false);
+                return;
+            }
+
+            const [longitude, latitude] = geocodeData.features[0].center;
+
+            // 2. Search for vets near the coordinates
+            const query = 'veterinário,clínica veterinária';
+            const vetsUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?proximity=${longitude},${latitude}&limit=10&access_token=${process.env.NEXT_PUBLIC_MAPBOX_API_KEY}`;
+            const vetsResponse = await fetch(vetsUrl);
+            const vetsData = await vetsResponse.json();
+
+            if (vetsData.features && vetsData.features.length > 0) {
+                const foundVets: Vet[] = vetsData.features.map((feature: any) => ({
                     id: feature.id,
                     name: feature.text,
                     address: feature.place_name.split(',').slice(1).join(',').trim(),
@@ -69,10 +77,11 @@ export function Emergency() {
                 }));
                 setVets(foundVets);
             } else {
-                setError("Nenhum veterinário encontrado no raio de 10km. Tente novamente mais tarde ou aumente a área de busca.");
+                setError("Nenhum veterinário encontrado próximo a esta cidade. Tente uma cidade maior ou verifique a grafia.");
             }
+
         } catch (err) {
-            setError("Falha ao buscar veterinários. Verifique sua conexão com a internet.");
+            setError("Falha ao buscar. Verifique sua conexão ou tente novamente mais tarde.");
         } finally {
             setIsLoading(false);
         }
@@ -84,22 +93,40 @@ export function Emergency() {
                 <div className="mx-auto bg-destructive/10 p-4 rounded-full w-fit mb-4">
                     <Siren className="h-8 w-8 text-destructive" />
                 </div>
-                <CardTitle className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-foreground">Emergência 24h</CardTitle>
-                <CardDescription className="font-body text-base md:text-lg pt-1 text-muted-foreground">Encontre veterinários próximos a você</CardDescription>
+                <CardTitle className="font-headline text-2xl md:text-3xl font-bold tracking-tight text-foreground">Emergência</CardTitle>
+                <CardDescription className="font-body text-base md:text-lg pt-1 text-muted-foreground">Encontre veterinários 24h</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle className="font-headline">Atenção!</AlertTitle>
                     <AlertDescription className="font-body">
-                        Em caso de emergência, ligue para um profissional imediatamente. Esta ferramenta é apenas para auxílio.
+                        Em caso de emergência, ligue para um profissional imediatamente. Esta ferramenta é para auxílio.
                     </AlertDescription>
                 </Alert>
                 
-                <Button onClick={handleSearch} disabled={isLoading} className="w-full font-headline font-bold text-lg py-6 rounded-xl">
-                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <MapPin className="mr-2 h-5 w-5" />}
-                    {isLoading ? "Buscando..." : "Buscar Veterinários Próximos"}
-                </Button>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="city"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="font-headline text-md font-semibold">Informe sua cidade</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Ex: São Paulo" {...field} className="font-body" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit" disabled={isLoading} className="w-full font-headline font-bold text-lg py-6 rounded-xl">
+                            {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <MapPin className="mr-2 h-5 w-5" />}
+                            {isLoading ? "Buscando..." : "Buscar Clínicas"}
+                        </Button>
+                    </form>
+                </Form>
+
 
                 {error && (
                      <Alert variant="default" className="bg-yellow-50 border-yellow-200">
@@ -113,7 +140,7 @@ export function Emergency() {
 
                 {vets.length > 0 && (
                     <div className="space-y-4">
-                         <h3 className="font-headline text-lg font-semibold text-center">Veterinários encontrados:</h3>
+                         <h3 className="font-headline text-lg font-semibold text-center">Clínicas encontradas:</h3>
                         {vets.map((vet) => (
                             <Card key={vet.id} className="bg-background/50">
                                 <CardHeader>
